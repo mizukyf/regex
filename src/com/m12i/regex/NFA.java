@@ -76,10 +76,10 @@ final class NFA {
 		}
 		/**
 		 * 状態遷移パス情報をコピーして取り込む.
-		 * @param fragments 取り込み元
+		 * @param sources 取り込み元
 		 */
-		void include(final Fragment... fragments) {
-			for (final Fragment frag : fragments) {
+		void include(final Fragment... sources) {
+			for (final Fragment frag : sources) {
 				this.paths.include(frag.paths);
 			}
 		}

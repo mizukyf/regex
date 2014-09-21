@@ -138,12 +138,12 @@ final class Paths {
 	}
 	/**
 	 * 状態遷移パス情報をコピーして取り込む.
-	 * @param that 取り込み元
+	 * @param source 取り込み元
 	 */
-	void include(final Paths that) {
-		this.acceptsMap.putAll(that.acceptsMap);
-		this.klassKeysMap.putAll(that.klassKeysMap);
-		this.dotKeyMap.putAll(that.dotKeyMap);
+	void include(final Paths source) {
+		this.acceptsMap.putAll(source.acceptsMap);
+		this.klassKeysMap.putAll(source.klassKeysMap);
+		this.dotKeyMap.putAll(source.dotKeyMap);
 	}
 	private Key[] concat(final Key[] a, final Key... b) {
 		final int aLen = a.length;
