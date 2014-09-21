@@ -65,7 +65,7 @@ final class Parser {
 		while (curr.kind != Kind.RBRACKET) {
 			if (curr.kind == Kind.HYPHEN) {
 				next();
-				buff.addAll(range(buff.getLast(), curr.value));
+				buff.addAll(range(buff.removeLast(), curr.value));
 			} else {
 				buff.add(curr.value);
 			}
