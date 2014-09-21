@@ -165,4 +165,11 @@ final class DFA {
 	Runtime initializeRuntime() {
 		return new Runtime(this);
 	}
+	/**
+	 * オブジェクトの内容を文字列表現として整形する.
+	 * @return 整形結果
+	 */
+	String inspect() {
+		return nfa.inspect();
+	}
 }

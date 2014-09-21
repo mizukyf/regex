@@ -119,4 +119,16 @@ public final class Regex {
 	public boolean lookingAt(final String input) {
 		return matcher(input).lookingAt();
 	}
+	/**
+	 * オブジェクトの内容を文字列表現として整形する.
+	 * @return 整形結果
+	 */
+	String inspect() {
+		final StringBuilder buff = new StringBuilder();
+		buff.append("pattern: ")
+		.append(Functions.stringLiteral(pattern))
+		.append(System.lineSeparator())
+		.append(this.dfa.inspect());
+		return buff.toString();
+	}
 }
