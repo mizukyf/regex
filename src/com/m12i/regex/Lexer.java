@@ -53,8 +53,6 @@ final class Lexer {
 		case '[':
 			bracket = true;
 			return Token.LBRACKET;
-		case '^':
-			return Token.CARET;
 		default:
 			return Token.charToken(ch);
 		}

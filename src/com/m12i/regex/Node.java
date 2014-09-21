@@ -112,11 +112,11 @@ final class Node {
 			final Fragment fragN = new Fragment(s0, s1);
 			fragN.connect(Char.just(value), Functions.array(s1));
 			return fragN;
-		} else if (kind == Node.Kind.KLASS) {//TODO
+		} else if (kind == Node.Kind.KLASS) {
 			final long s0 = factory.product();
 			final long s1 = factory.product();
 			final Fragment fragN = new Fragment(s0, s1);
-			fragN.connect(Char.klass(klass), Functions.array(s1));
+			fragN.connect(negative ? Char.negativeKlass(klass) : Char.klass(klass), Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.DOT) {
 			final long s0 = factory.product();
