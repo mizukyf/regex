@@ -53,30 +53,6 @@ final class Paths {
 			return true;
 		}
 	}
-	/**
-	 * オブジェクトの内容を文字列表現として整形する.
-	 * @return 整形結果
-	 */
-	String format() {
-		final String lineSep = System.lineSeparator();
-		final StringBuilder buff = new StringBuilder();
-		for (final Key k : acceptsMap.keySet()) {
-			if (buff.length() > 0) {
-				buff.append(lineSep);
-			}
-			if (Char.EPSILON == k.by) {
-				buff.append(String.format("(from: %s, by: (epsilon), accepts: %s)", 
-						k.from, 
-						Functions.arrayList(acceptsMap.get(k))));
-			} else {
-				buff.append(String.format("(from: %s, by: %s, accepts: %s)", 
-						k.from, 
-						k.by.format(),
-						Functions.arrayList(acceptsMap.get(k))));
-			}
-		}
-		return buff.toString();
-	}
 	
 	private final Map<Key, long[]> acceptsMap = new HashMap<Key, long[]>();
 	private final Map<Long, Key> dotKeyMap = new HashMap<Long, Key>();
@@ -148,5 +124,29 @@ final class Paths {
 			r[i + aLen] = b[i];
 		}
 		return r;
+	}
+	/**
+	 * オブジェクトの内容を文字列表現として整形する.
+	 * @return 整形結果
+	 */
+	String format() {
+		final String lineSep = System.lineSeparator();
+		final StringBuilder buff = new StringBuilder();
+		for (final Key k : acceptsMap.keySet()) {
+			if (buff.length() > 0) {
+				buff.append(lineSep);
+			}
+			if (Char.EPSILON == k.by) {
+				buff.append(String.format("(from: %s, by: (epsilon), accepts: %s)", 
+						k.from, 
+						Functions.arrayList(acceptsMap.get(k))));
+			} else {
+				buff.append(String.format("(from: %s, by: %s, accepts: %s)", 
+						k.from, 
+						k.by.format(),
+						Functions.arrayList(acceptsMap.get(k))));
+			}
+		}
+		return buff.toString();
 	}
 }
