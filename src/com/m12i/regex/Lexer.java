@@ -7,6 +7,7 @@ final class Lexer {
 	private final int len;
 	private final char[] chars;
 	private int pos = 0;
+	private boolean bracket = false;
 	
 	/**
 	 * パターン文字列により字句解析器を初期化する.
@@ -25,9 +26,15 @@ final class Lexer {
 	 */
 	Token scan() {
 		if (pos == len) {
+			if (bracket) {
+				throw new IllegalArgumentException("Unclosed bracket.");
+			}
 			return Token.EOF;
 		}
 		final char ch = chars[pos ++];
+		if (bracket) {
+			return scanInBracket(ch);
+		}
 		switch (ch) {
 		case '\\':
 			return Token.charToken(chars[pos ++]);
@@ -43,6 +50,41 @@ final class Lexer {
 			return Token.LPAREN;
 		case ')':
 			return Token.RPAREN;
+		case '[':
+			bracket = true;
+			return Token.LBRACKET;
+//		case ']':
+//			bracket = false;
+//			return Token.RBRACKET;
+		case '^':
+			return Token.CARET;
+		default:
+			return Token.charToken(ch);
+		}
+	}
+	private Token scanInBracket(final char ch) {
+		switch (ch) {
+		case '\\':
+			return Token.charToken(chars[pos ++]);
+//		case '.':
+//			return Token.DOT;
+//		case '|':
+//			return Token.UNION;
+//		case '*':
+//			return Token.STAR;
+//		case '+':
+//			return Token.PLUS;
+//		case '(':
+//			return Token.LPAREN;
+//		case ')':
+//			return Token.RPAREN;
+		case ']':
+			bracket = false;
+			return Token.RBRACKET;
+		case '-':
+			return Token.HYPHEN;
+		case '^':
+			return Token.CARET;
 		default:
 			return Token.charToken(ch);
 		}

@@ -1,9 +1,6 @@
 package com.m12i.regex;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -29,9 +26,18 @@ final class NFA {
 			this.accepts = accepts;
 		}
 		
+		/**
+		 * 空文字（イプシロン）による状態遷移パスを追加する.
+		 * @param to 受理状態
+		 */
 		void connectWithEpsilon(final long[] to) {
 			connectWithEpsilon(this.from, to);
 		}
+		/**
+		 * 空文字（イプシロン）による状態遷移パスを追加する.
+		 * @param from 初期状態
+		 * @param to 受理状態
+		 */
 		void connectWithEpsilon(final long from, final long[] to) {
 			final long[] mem = paths.get(from);
 			if (mem != null) {
@@ -40,9 +46,21 @@ final class NFA {
 				paths.put(from, to);
 			}
 		}
+		/**
+		 * 状態遷移パスを追加する.
+		 * 初期状態はレシーバ・オブジェクトのそれが利用される。
+		 * @param by 入力文字
+		 * @param to 受理状態
+		 */
 		void connect(final Char by, final long[] to) {
 			connect(this.from, by, to);
 		}
+		/**
+		 * 状態遷移パスを追加する.
+		 * @param from 初期状態
+		 * @param by 入力文字
+		 * @param to 受理状態
+		 */
 		void connect(final long from, final Char by, final long[] to) {
 			final long[] mem = paths.get(from, by);
 			if (mem != null) {
@@ -51,149 +69,21 @@ final class NFA {
 				paths.put(from, by, to);
 			}
 		}
+		/**
+		 * 状態遷移パス情報をコピーして取り込む.
+		 * @param fragments 取り込み元
+		 */
 		void include(final Fragment... fragments) {
 			for (final Fragment frag : fragments) {
 				this.paths.include(frag.paths);
 			}
 		}
+		/**
+		 * {@link NFA}オブジェクトを構築する.
+		 * @return {@link NFA}オブジェクト
+		 */
 		NFA build() {
 			return new NFA(this);
-		}
-	}
-	static final class Char {
-		static final Char EPSILON = new Char(-1, null, false, false);
-		static final Char DOT = new Char(-1, null, true, false);
-		private static final Map<Character,Char> justCharCache = new HashMap<Character,Char>();
-		private static final Map<char[],Char> charKlassCache = new HashMap<char[],Char>();
-		private static final Map<char[],Char> negaCharKlassCache = new HashMap<char[],Char>();
-		
-		static Char just(final char c) {
-			final Char mem = justCharCache.get(c);
-			if (mem != null) {
-				return mem;
-			} else {
-				final Char newChar = new Char(c, null, false, false);
-				justCharCache.put(c, newChar);
-				return newChar;
-			}
-		}
-		static Char klass(final char[] cs) {
-			final Char mem = charKlassCache.get(cs);
-			if (mem != null) {
-				return mem;
-			} else {
-				return new Char(-1, cs, false, false);
-			}
-		}
-		static Char negativeKlass(final char[] cs) {
-			final Char mem = negaCharKlassCache.get(cs);
-			if (mem != null) {
-				return mem;
-			} else {
-				return new Char(-1, cs, false, true);
-			}
-		}
-		
-		private final int c;
-		private final char[] cs;
-		final boolean isEpsilon;
-		final boolean isJustChar;
-		final boolean isCharKlass;
-		final boolean isDot;
-		final boolean isNegative;
-		
-		private Char(final int c, final char[] cs, final boolean dot, final boolean nega) {
-			this.c = c;
-			this.cs = cs;
-			this.isEpsilon = c < 0 && cs == null && !dot;
-			this.isJustChar = c >= 0;
-			this.isCharKlass = cs != null;
-			this.isDot = dot;
-			this.isNegative = nega;
-		}
-		
-		boolean matches(final char ch) {
-			if (isJustChar) {
-				return this.c == ch;//TODO
-			} else if (isCharKlass && !isNegative) {
-				for (final char c: cs) {
-					if (c == ch) {
-						return true;
-					}
-				}
-				return false;
-			} else if (isCharKlass && isNegative) {
-				for (final char c: cs) {
-					if (c == ch) {
-						return false;
-					}
-				}
-				return true;
-			} else if (isDot) {
-				return true;
-			} else {
-				throw new IllegalStateException();
-			}
-		}
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + c;
-			result = prime * result + Arrays.hashCode(cs);
-			result = prime * result + (isCharKlass ? 1231 : 1237);
-			result = prime * result + (isDot ? 1231 : 1237);
-			result = prime * result + (isEpsilon ? 1231 : 1237);
-			result = prime * result + (isJustChar ? 1231 : 1237);
-			result = prime * result + (isNegative ? 1231 : 1237);
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Char other = (Char) obj;
-			if (c != other.c)
-				return false;
-			if (!Arrays.equals(cs, other.cs))
-				return false;
-			if (isCharKlass != other.isCharKlass)
-				return false;
-			if (isDot != other.isDot)
-				return false;
-			if (isEpsilon != other.isEpsilon)
-				return false;
-			if (isJustChar != other.isJustChar)
-				return false;
-			if (isNegative != other.isNegative)
-				return false;
-			return true;
-		}
-		public String format() {
-			if (isJustChar) {
-				return Functions.charLiteral((char)c);
-			} else if (isEpsilon) {
-				return "(epsilon)";
-			} else if (isDot) {
-				return "(dot)";
-			} else if (isCharKlass) {
-				final StringBuilder buff = new StringBuilder();
-				buff.append('[');
-				if (isNegative) {
-					buff.append('!');
-				}
-				for (final char c : cs) {
-					buff.append(Functions.escapedChar(c));
-				}
-				buff.append(']');
-				return buff.toString();
-			} else {
-				return "?";
-			}
 		}
 	}
 	
@@ -277,7 +167,7 @@ final class NFA {
 		buff.append("from: ").append(this.from).append(lineSep);
 		buff.append("accepts: ").append(Functions.arrayList(this.accepts)).append(lineSep);
 		buff.append("transitions: ").append(lineSep);
-		buff.append(Paths.format(this.paths));
+		buff.append(this.paths.format());
 		return buff.toString();
 	}
 }

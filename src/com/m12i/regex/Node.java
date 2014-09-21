@@ -1,6 +1,5 @@
 package com.m12i.regex;
 
-import com.m12i.regex.NFA.Char;
 import com.m12i.regex.NFA.Fragment;
 
 /**
@@ -11,7 +10,7 @@ final class Node {
 	 * 構文木を構成するノードの種別.
 	 */
 	static enum Kind {
-		CHAR, UNION, STAR, CONCAT, DOT;
+		CHAR, UNION, STAR, CONCAT, DOT, KLASS;
 	}
 	
 	private static final char nullChar = '\u0000';
@@ -24,7 +23,23 @@ final class Node {
 	 * @return ノード
 	 */
 	static Node charNode(final char value) {
-		return new Node(Kind.CHAR, value, null, null);
+		return new Node(Kind.CHAR, value, null, false, null, null);
+	}
+	/**
+	 * 構文木のノードを生成して返す.
+	 * @param values 文字クラスに属する文字集合
+	 * @return ノード
+	 */
+	static Node klassNode(final char[] values) {
+		return new Node(Kind.KLASS, nullChar, values, false, null, null);
+	}
+	/**
+	 * 構文木のノードを生成して返す.
+	 * @param values 文字クラスに属さない文字集合
+	 * @return ノード
+	 */
+	static Node negativeKlassNode(final char[] values) {
+		return new Node(Kind.KLASS, nullChar, values, true, null, null);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
@@ -33,7 +48,7 @@ final class Node {
 	 * @return ノード
 	 */
 	static Node unionNode(final Node left, final Node right) {
-		return new Node(Kind.UNION, nullChar, left, right);
+		return new Node(Kind.UNION, nullChar, null, false, left, right);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
@@ -41,7 +56,7 @@ final class Node {
 	 * @return ノード
 	 */
 	static Node starNode(final Node factor) {
-		return new Node(Kind.STAR, nullChar, factor, null);
+		return new Node(Kind.STAR, nullChar, null, false, factor, null);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
@@ -59,57 +74,28 @@ final class Node {
 	 * @return ノード
 	 */
 	static Node concatNode(final Node left, final Node right) {
-		return new Node(Kind.CONCAT, nullChar, left, right);
+		return new Node(Kind.CONCAT, nullChar, null, false, left, right);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
 	 * @return ノード
 	 */
 	static Node dotNode() {
-		return new Node(Kind.DOT, nullChar, null, null);
-	}
-	private static void formatHelper(final StringBuilder buff, final int depth, final Node node) {
-		if (depth > 0) {
-			buff.append(lineSep);
-		}
-		indent(buff, depth);
-		if (node.kind == Node.Kind.DOT) {
-			buff.append("Dot");
-		} else if (node.kind == Node.Kind.CHAR) {
-			buff
-			.append("Char(")
-			.append(Functions.charLiteral(node.value));
-		} else if (node.kind == Node.Kind.CONCAT) {
-			buff.append("Concat(");
-			formatHelper(buff, depth + 1, node.left);
-			buff.append(',');
-			formatHelper(buff, depth + 1, node.right);
-		} else if (node.kind == Node.Kind.STAR) {
-			buff.append("Star(");
-			formatHelper(buff, depth + 1, node.left);
-		} else if (node.kind == Node.Kind.UNION) {
-			buff.append("Union(");
-			formatHelper(buff, depth + 1, node.left);
-			buff.append(',');
-			formatHelper(buff, depth + 1, node.right);
-		}
-		buff.append(')');
-	}
-	private static void indent(final StringBuilder buff, final int depth) {
-		if (depth == 0) return;
-		for (int i = 0; i < depth; i++) {
-			buff.append('\t');
-		}
+		return new Node(Kind.DOT, nullChar, null, false, null, null);
 	}
 
 	final Kind kind;
 	final char value;
+	final char[] klass;
+	final boolean negative;
 	final Node left;
 	final Node right;
 	
-	private Node(final Node.Kind kind, final char value, final Node left, final Node right) {
+	private Node(final Node.Kind kind, final char value, final char[] klass, final boolean nega, final Node left, final Node right) {
 		this.kind = kind;
 		this.value = value;
+		this.klass = klass;
+		this.negative = nega;
 		this.left = left;
 		this.right = right;
 	}
@@ -125,6 +111,12 @@ final class Node {
 			final long s1 = factory.product();
 			final Fragment fragN = new Fragment(s0, s1);
 			fragN.connect(Char.just(value), Functions.array(s1));
+			return fragN;
+		} else if (kind == Node.Kind.KLASS) {//TODO
+			final long s0 = factory.product();
+			final long s1 = factory.product();
+			final Fragment fragN = new Fragment(s0, s1);
+			fragN.connect(Char.klass(klass), Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.DOT) {
 			final long s0 = factory.product();
@@ -171,5 +163,44 @@ final class Node {
 		final StringBuilder buff = new StringBuilder();
 		formatHelper(buff, 0, this);
 		return buff.toString();
+	}
+	private void formatHelper(final StringBuilder buff, final int depth, final Node node) {
+		if (depth > 0) {
+			buff.append(lineSep);
+		}
+		indent(buff, depth);
+		if (node.kind == Node.Kind.DOT) {
+			buff.append("Dot");
+		} else if (node.kind == Node.Kind.CHAR) {
+			buff
+			.append("Char(")
+			.append(Functions.charLiteral(node.value));
+		} else if (node.kind == Node.Kind.KLASS) {
+			buff
+			.append("Klass([")
+			.append(node.negative ? "^" : "")
+			.append(String.valueOf(node.klass))
+			.append("])");
+		} else if (node.kind == Node.Kind.CONCAT) {
+			buff.append("Concat(");
+			formatHelper(buff, depth + 1, node.left);
+			buff.append(',');
+			formatHelper(buff, depth + 1, node.right);
+		} else if (node.kind == Node.Kind.STAR) {
+			buff.append("Star(");
+			formatHelper(buff, depth + 1, node.left);
+		} else if (node.kind == Node.Kind.UNION) {
+			buff.append("Union(");
+			formatHelper(buff, depth + 1, node.left);
+			buff.append(',');
+			formatHelper(buff, depth + 1, node.right);
+		}
+		buff.append(')');
+	}
+	private void indent(final StringBuilder buff, final int depth) {
+		if (depth == 0) return;
+		for (int i = 0; i < depth; i++) {
+			buff.append('\t');
+		}
 	}
 }

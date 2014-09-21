@@ -1,9 +1,9 @@
 package com.m12i.regex;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.m12i.regex.NFA.Char;
 import com.m12i.regex.NFA.Fragment;
 
 /**
@@ -12,7 +12,10 @@ import com.m12i.regex.NFA.Fragment;
  * このオブジェクトは{@link NFA}と{@link Fragment}で使用されます。
  */
 final class Paths {
-	static final class Key {
+	/**
+	 * 状態遷移パスのマップのためのキー.
+	 */
+	private final class Key {
 		final long from;
 		final Char by;
 		private Key(final long from, final Char by) {
@@ -50,22 +53,26 @@ final class Paths {
 			return true;
 		}
 	}
-	static String format(Paths paths) {
+	/**
+	 * オブジェクトの内容を文字列表現として整形する.
+	 * @return 整形結果
+	 */
+	String format() {
 		final String lineSep = System.lineSeparator();
 		final StringBuilder buff = new StringBuilder();
-		for (final Key k : paths.acceptsMap.keySet()) {
+		for (final Key k : acceptsMap.keySet()) {
 			if (buff.length() > 0) {
 				buff.append(lineSep);
 			}
 			if (Char.EPSILON == k.by) {
 				buff.append(String.format("(from: %s, by: (epsilon), accepts: %s)", 
 						k.from, 
-						Functions.arrayList(paths.acceptsMap.get(k))));
+						Functions.arrayList(acceptsMap.get(k))));
 			} else {
 				buff.append(String.format("(from: %s, by: %s, accepts: %s)", 
 						k.from, 
 						k.by.format(),
-						Functions.arrayList(paths.acceptsMap.get(k))));
+						Functions.arrayList(acceptsMap.get(k))));
 			}
 		}
 		return buff.toString();
@@ -75,6 +82,12 @@ final class Paths {
 	private final Map<Long, Key> dotKeyMap = new HashMap<Long, Key>();
 	private final Map<Long, Key[]> klassKeysMap = new HashMap<Long, Key[]>();
 	
+	/**
+	 * 初期状態と入力文字から状態遷移パスを取得する.
+	 * @param from 
+	 * @param by
+	 * @return
+	 */
 	long[] get(final long from, final Char by) {
 		return acceptsMap.get(new Key(from, by));
 	}
@@ -111,7 +124,7 @@ final class Paths {
 			if (by.isCharKlass) {
 				final Key[] keys = klassKeysMap.get(from);
 				if (keys != null) {
-					klassKeysMap.put(from, Functions.concat(keys, k));
+					klassKeysMap.put(from, concat(keys, k));
 				} else {
 					klassKeysMap.put(from, new Key[]{k});
 				}
@@ -126,5 +139,14 @@ final class Paths {
 		this.acceptsMap.putAll(that.acceptsMap);
 		this.klassKeysMap.putAll(that.klassKeysMap);
 		this.dotKeyMap.putAll(that.dotKeyMap);
+	}
+	private Key[] concat(final Key[] a, final Key... b) {
+		final int aLen = a.length;
+		final int bLen = b.length;
+		final Key[] r = Arrays.copyOf(a, aLen + bLen);
+		for (int i = 0; i < bLen; i ++) {
+			r[i + aLen] = b[i];
+		}
+		return r;
 	}
 }

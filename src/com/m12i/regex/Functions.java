@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-
-import com.m12i.regex.Paths.Key;
 
 /**
  * パターンマッチおよびその準備手続きのなかで使用するヘルパー関数.
@@ -22,7 +21,7 @@ final class Functions {
 			this.escaped = escaped;
 		}
 	}
-	private static final boolean debug = false;
+	private static final boolean debug = true;
 	private static final String dumpTmpl = "[[%s]](%s)";
 	private static final Pair[] dict = {
 			new Pair('\b', "\\b"),
@@ -116,15 +115,6 @@ final class Functions {
 		}
 		return r;
 	}
-	static Key[] concat(final Key[] a, final Key... b) {
-		final int aLen = a.length;
-		final int bLen = b.length;
-		final Key[] r = Arrays.copyOf(a, aLen + bLen);
-		for (int i = 0; i < bLen; i ++) {
-			r[i + aLen] = b[i];
-		}
-		return r;
-	}
 	static Set<Long> set(final long...array) {
 		final Set<Long> r = new HashSet<Long>();
 		if (array != null) {
@@ -158,5 +148,12 @@ final class Functions {
 			r.add(e);
 		}
 		return r;
+	}
+	static char[] array(final List<Character> list) {
+		final char[] result = new char[list.size()];
+		for (int i = 0; i < list.size(); i ++) {
+			result[i] = list.get(i);
+		}
+		return result;
 	}
 }

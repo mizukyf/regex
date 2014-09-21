@@ -1,5 +1,9 @@
 package com.m12i.regex;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.m12i.regex.Token.Kind;
 
 /**
@@ -39,13 +43,51 @@ final class Parser {
 			final Node node = Node.dotNode();
 			next();
 			return node;
+		} else if (curr.kind == Kind.LBRACKET) {
+			next();
+			final Node node = charKlass();
+			return node;
 		} else {
 			final Node node = Node.charNode(curr.value);
 			next();
 			return node;
 		}
 	}
+	private Node charKlass() {
+		final boolean nega;
+		if (curr.kind == Kind.CARET) {
+			nega = true;
+			next();
+		} else {
+			nega = false;
+		}
+		final LinkedList<Character> buff = new LinkedList<Character>();
+		while (curr.kind != Kind.RBRACKET) {
+			if (curr.kind == Kind.HYPHEN) {
+				next();
+				buff.addAll(range(buff.getLast(), curr.value));
+			} else {
+				buff.add(curr.value);
+			}
+			next();
+		}
+		next();
+		final char[] values = Functions.array(buff);
+		return nega ? Node.negativeKlassNode(values) : Node.klassNode(values);
+	}
+	private List<Character> range(final char start, final char end) {
+		if (start > end || start > 127) {
+			return Collections.emptyList();
+		}
+		final int len = (end > 127 ? 127 : end) - start;
+		final List<Character> result = new LinkedList<Character>();
+		for (char i = 0; i <= len; i++) {
+			result.add((char) (start + i));
+		}
+		return result;
+	}
 	private Node star() {
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!");
 		final Node node = factor();
 		if (curr.kind == Kind.STAR) {
 			next();
@@ -57,7 +99,7 @@ final class Parser {
 		return node;
 	}
 	private Node seq() {
-		if (curr.kind == Kind.LPAREN || curr.kind == Kind.CHAR || curr.kind == Kind.DOT) {
+		if (curr.kind == Kind.LPAREN || curr.kind == Kind.CHAR || curr.kind == Kind.DOT || curr.kind == Kind.LBRACKET) {
 			return subseq();
 		} else {
 			return Node.EMPTY_CHAR_NODE;
@@ -65,7 +107,7 @@ final class Parser {
 	}
 	private Node subseq() {
 		final Node node0 = star();
-		if (curr.kind == Kind.LPAREN || curr.kind == Kind.CHAR || curr.kind == Kind.DOT) {
+		if (curr.kind == Kind.LPAREN || curr.kind == Kind.CHAR || curr.kind == Kind.DOT || curr.kind == Kind.LBRACKET) {
 			final Node node1 = subseq();
 			return Node.concatNode(node0, node1);
 		} else {
