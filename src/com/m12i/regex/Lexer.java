@@ -29,7 +29,7 @@ final class Lexer {
 		}
 		final char ch = chars[pos ++];
 		switch (ch) {
-		case '¥':
+		case '\\':
 			return Token.charToken(chars[pos ++]);
 		case '|':
 			return Token.UNION;
