@@ -159,7 +159,7 @@ final class Node {
 	 * ノードの内容を文字列表現として整形する.
 	 * @return 整形結果
 	 */
-	String format() {
+	String inspect() {
 		final StringBuilder buff = new StringBuilder();
 		formatHelper(buff, 0, this);
 		return buff.toString();

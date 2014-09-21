@@ -87,7 +87,6 @@ final class Parser {
 		return result;
 	}
 	private Node star() {
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!");
 		final Node node = factor();
 		if (curr.kind == Kind.STAR) {
 			next();

@@ -53,9 +53,6 @@ final class Lexer {
 		case '[':
 			bracket = true;
 			return Token.LBRACKET;
-//		case ']':
-//			bracket = false;
-//			return Token.RBRACKET;
 		case '^':
 			return Token.CARET;
 		default:
@@ -66,18 +63,6 @@ final class Lexer {
 		switch (ch) {
 		case '\\':
 			return Token.charToken(chars[pos ++]);
-//		case '.':
-//			return Token.DOT;
-//		case '|':
-//			return Token.UNION;
-//		case '*':
-//			return Token.STAR;
-//		case '+':
-//			return Token.PLUS;
-//		case '(':
-//			return Token.LPAREN;
-//		case ')':
-//			return Token.RPAREN;
 		case ']':
 			bracket = false;
 			return Token.RBRACKET;

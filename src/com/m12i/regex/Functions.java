@@ -38,13 +38,13 @@ final class Functions {
 			final String s;
 			if (o instanceof NFA) {
 				l = String.format(dumpTmpl, "NFA", o);
-				s = ((NFA) o).format();
+				s = ((NFA) o).inspect();
 			} else if (o instanceof Node) {
 				l = String.format(dumpTmpl, "Node", o);
-				s = ((Node) o).format();
+				s = ((Node) o).inspect();
 			} else if (o instanceof Token) {
 				l = String.format(dumpTmpl, "Token", o);
-				s = ((Token) o).format();
+				s = ((Token) o).inspect();
 			} else {
 				l = String.format(dumpTmpl, "Object", o);
 				s = o.toString();

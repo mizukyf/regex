@@ -166,13 +166,13 @@ final class NFA {
 	 * オブジェクトの内容を文字列表現として整形する.
 	 * @return 整形結果
 	 */
-	String format() {
+	String inspect() {
 		final String lineSep = System.lineSeparator();
 		final StringBuilder buff = new StringBuilder();
 		buff.append("from: ").append(this.from).append(lineSep);
 		buff.append("accepts: ").append(Functions.arrayList(this.accepts)).append(lineSep);
 		buff.append("transitions: ").append(lineSep);
-		buff.append(this.paths.format());
+		buff.append(this.paths.inspect());
 		return buff.toString();
 	}
 }

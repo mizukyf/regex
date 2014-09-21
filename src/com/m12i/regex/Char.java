@@ -154,7 +154,7 @@ final class Char {
 	 * オブジェクトの内容を文字列表現として整形する.
 	 * @return 整形結果
 	 */
-	public String format() {
+	String inspect() {
 		if (isJustChar) {
 			return Functions.charLiteral((char)c);
 		} else if (isEpsilon) {

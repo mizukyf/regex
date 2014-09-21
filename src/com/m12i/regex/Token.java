@@ -33,7 +33,7 @@ final class Token {
 	 * オブジェクトの内容を文字列表現として整形して返す.
 	 * @return 整形結果
 	 */
-	String format() {
+	String inspect() {
 		if (this.kind == Kind.CHAR) {
 			return this.kind.toString() + '(' + this.value + ')';
 		} else {

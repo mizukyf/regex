@@ -158,7 +158,7 @@ final class Paths {
 	 * オブジェクトの内容を文字列表現として整形する.
 	 * @return 整形結果
 	 */
-	String format() {
+	String inspect() {
 		final String lineSep = System.lineSeparator();
 		final StringBuilder buff = new StringBuilder();
 		for (final Key k : acceptsMap.keySet()) {
@@ -172,7 +172,7 @@ final class Paths {
 			} else {
 				buff.append(String.format("(from: %s, by: %s, accepts: %s)", 
 						k.from, 
-						k.by.format(),
+						k.by.inspect(),
 						Functions.arrayList(acceptsMap.get(k))));
 			}
 		}
