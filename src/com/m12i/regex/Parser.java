@@ -35,6 +35,10 @@ final class Parser {
 			final Node node = subexpr();
 			checkAndNext(Kind.RPAREN);
 			return node;
+		} else if (curr.kind == Kind.DOT) {
+			final Node node = Node.dotNode();
+			next();
+			return node;
 		} else {
 			final Node node = Node.charNode(curr.value);
 			next();
@@ -53,7 +57,7 @@ final class Parser {
 		return node;
 	}
 	private Node seq() {
-		if (curr.kind == Kind.LPAREN || curr.kind == Kind.CHAR) {
+		if (curr.kind == Kind.LPAREN || curr.kind == Kind.CHAR || curr.kind == Kind.DOT) {
 			return subseq();
 		} else {
 			return Node.EMPTY_CHAR_NODE;
@@ -61,7 +65,7 @@ final class Parser {
 	}
 	private Node subseq() {
 		final Node node0 = star();
-		if (curr.kind == Kind.LPAREN || curr.kind == Kind.CHAR) {
+		if (curr.kind == Kind.LPAREN || curr.kind == Kind.CHAR || curr.kind == Kind.DOT) {
 			final Node node1 = subseq();
 			return Node.concatNode(node0, node1);
 		} else {

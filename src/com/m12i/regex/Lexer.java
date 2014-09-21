@@ -31,6 +31,8 @@ final class Lexer {
 		switch (ch) {
 		case '\\':
 			return Token.charToken(chars[pos ++]);
+		case '.':
+			return Token.DOT;
 		case '|':
 			return Token.UNION;
 		case '*':

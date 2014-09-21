@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
+import com.m12i.regex.Paths.Key;
+
 /**
  * パターンマッチおよびその準備手続きのなかで使用するヘルパー関数.
  */
@@ -79,10 +81,14 @@ final class Functions {
 		return buff.toString();
 	}
 	static String charLiteral(final char c) {
+		return "'" + escapedChar(c) + "'";
+	}
+	static String escapedChar(final char c) {
 		final StringBuilder buff = new StringBuilder();
-		buff.append('\'');
 		if (c == '"') {
 			buff.append(c);
+		} else if (c == '\'') {
+			buff.append('\\').append(c);
 		} else {
 			final int index = searchEscaped(c);
 			if (index < 0) {
@@ -91,7 +97,6 @@ final class Functions {
 				buff.append(dict[index].escaped);
 			}
 		}
-		buff.append('\'');
 		return buff.toString();
 	}
 	private static int searchEscaped(final char ch) {
@@ -106,6 +111,15 @@ final class Functions {
 		final int aLen = a.length;
 		final int bLen = b.length;
 		final long[] r = Arrays.copyOf(a, aLen + bLen);
+		for (int i = 0; i < bLen; i ++) {
+			r[i + aLen] = b[i];
+		}
+		return r;
+	}
+	static Key[] concat(final Key[] a, final Key... b) {
+		final int aLen = a.length;
+		final int bLen = b.length;
+		final Key[] r = Arrays.copyOf(a, aLen + bLen);
 		for (int i = 0; i < bLen; i ++) {
 			r[i + aLen] = b[i];
 		}

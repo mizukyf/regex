@@ -1,5 +1,6 @@
 package com.m12i.regex;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,85 +13,6 @@ import java.util.Set;
  * このオブジェクトは{@link Fragment}オブジェクトから導出されます。
  */
 final class NFA {
-	/**
-	 * 状態遷移パスセット.
-	 * 初期状態と入力文字をキーにして受理状態を管理します。
-	 * このオブジェクトは{@link NFA}と{@link Fragment}で使用されます。
-	 */
-	static final class Paths {
-		private static final class Key {
-			final long from;
-			final int by;
-			private Key(final long from, final char by) {
-				this.from = from;
-				this.by = by;
-			}
-			private Key(final long from) {
-				this.from = from;
-				this.by = -1;
-			}
-			@Override
-			public int hashCode() {
-				final int prime = 31;
-				int result = 1;
-				result = prime * result + by;
-				result = prime * result + (int) (from ^ (from >>> 32));
-				return result;
-			}
-			@Override
-			public boolean equals(Object obj) {
-				if (this == obj)
-					return true;
-				if (obj == null)
-					return false;
-				if (getClass() != obj.getClass())
-					return false;
-				Key other = (Key) obj;
-				if (by != other.by)
-					return false;
-				if (from != other.from)
-					return false;
-				return true;
-			}
-		}
-		static String format(Paths paths) {
-			final String lineSep = System.lineSeparator();
-			final StringBuilder buff = new StringBuilder();
-			for (final Key k : paths.mem.keySet()) {
-				if (buff.length() > 0) {
-					buff.append(lineSep);
-				}
-				if (k.by < 0) {
-					buff.append(String.format("(from: %s, by: -, accepts: %s)", 
-							k.from, 
-							Functions.arrayList(paths.mem.get(k))));
-				} else {
-					buff.append(String.format("(from: %s, by: %s, accepts: %s)", 
-							k.from, 
-							Functions.charLiteral((char) k.by),
-							Functions.arrayList(paths.mem.get(k))));
-				}
-			}
-			return buff.toString();
-		}
-		
-		private final Map<Key, long[]> mem = new HashMap<NFA.Paths.Key, long[]>();
-		long[] get(final long from, final char by) {
-			return mem.get(new Key(from, by));
-		}
-		long[] get(final long from) {
-			return mem.get(new Key(from));
-		}
-		void put(final long from, final char by, final long[] accepts) {
-			mem.put(new Key(from, by), accepts);
-		}
-		void put(final long from, final long[] accepts) {
-			mem.put(new Key(from), accepts);
-		}
-		void include(final Paths that) {
-			this.mem.putAll(that.mem);
-		}
-	}
 	/**
 	 * NFAフラグメント.
 	 * NFAを構成する各状態遷移の部分を表現します。
@@ -107,10 +29,10 @@ final class NFA {
 			this.accepts = accepts;
 		}
 		
-		void connect(final long[] to) {
-			connect(this.from, to);
+		void connectWithEpsilon(final long[] to) {
+			connectWithEpsilon(this.from, to);
 		}
-		void connect(final long from, final long[] to) {
+		void connectWithEpsilon(final long from, final long[] to) {
 			final long[] mem = paths.get(from);
 			if (mem != null) {
 				paths.put(from, Functions.concat(mem, to));
@@ -118,10 +40,10 @@ final class NFA {
 				paths.put(from, to);
 			}
 		}
-		void connect(final char by, final long[] to) {
+		void connect(final Char by, final long[] to) {
 			connect(this.from, by, to);
 		}
-		void connect(final long from, final char by, final long[] to) {
+		void connect(final long from, final Char by, final long[] to) {
 			final long[] mem = paths.get(from, by);
 			if (mem != null) {
 				paths.put(from, by, Functions.concat(mem, to));
@@ -136,6 +58,142 @@ final class NFA {
 		}
 		NFA build() {
 			return new NFA(this);
+		}
+	}
+	static final class Char {
+		static final Char EPSILON = new Char(-1, null, false, false);
+		static final Char DOT = new Char(-1, null, true, false);
+		private static final Map<Character,Char> justCharCache = new HashMap<Character,Char>();
+		private static final Map<char[],Char> charKlassCache = new HashMap<char[],Char>();
+		private static final Map<char[],Char> negaCharKlassCache = new HashMap<char[],Char>();
+		
+		static Char just(final char c) {
+			final Char mem = justCharCache.get(c);
+			if (mem != null) {
+				return mem;
+			} else {
+				final Char newChar = new Char(c, null, false, false);
+				justCharCache.put(c, newChar);
+				return newChar;
+			}
+		}
+		static Char klass(final char[] cs) {
+			final Char mem = charKlassCache.get(cs);
+			if (mem != null) {
+				return mem;
+			} else {
+				return new Char(-1, cs, false, false);
+			}
+		}
+		static Char negativeKlass(final char[] cs) {
+			final Char mem = negaCharKlassCache.get(cs);
+			if (mem != null) {
+				return mem;
+			} else {
+				return new Char(-1, cs, false, true);
+			}
+		}
+		
+		private final int c;
+		private final char[] cs;
+		final boolean isEpsilon;
+		final boolean isJustChar;
+		final boolean isCharKlass;
+		final boolean isDot;
+		final boolean isNegative;
+		
+		private Char(final int c, final char[] cs, final boolean dot, final boolean nega) {
+			this.c = c;
+			this.cs = cs;
+			this.isEpsilon = c < 0 && cs == null && !dot;
+			this.isJustChar = c >= 0;
+			this.isCharKlass = cs != null;
+			this.isDot = dot;
+			this.isNegative = nega;
+		}
+		
+		boolean matches(final char ch) {
+			if (isJustChar) {
+				return this.c == ch;//TODO
+			} else if (isCharKlass && !isNegative) {
+				for (final char c: cs) {
+					if (c == ch) {
+						return true;
+					}
+				}
+				return false;
+			} else if (isCharKlass && isNegative) {
+				for (final char c: cs) {
+					if (c == ch) {
+						return false;
+					}
+				}
+				return true;
+			} else if (isDot) {
+				return true;
+			} else {
+				throw new IllegalStateException();
+			}
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + c;
+			result = prime * result + Arrays.hashCode(cs);
+			result = prime * result + (isCharKlass ? 1231 : 1237);
+			result = prime * result + (isDot ? 1231 : 1237);
+			result = prime * result + (isEpsilon ? 1231 : 1237);
+			result = prime * result + (isJustChar ? 1231 : 1237);
+			result = prime * result + (isNegative ? 1231 : 1237);
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Char other = (Char) obj;
+			if (c != other.c)
+				return false;
+			if (!Arrays.equals(cs, other.cs))
+				return false;
+			if (isCharKlass != other.isCharKlass)
+				return false;
+			if (isDot != other.isDot)
+				return false;
+			if (isEpsilon != other.isEpsilon)
+				return false;
+			if (isJustChar != other.isJustChar)
+				return false;
+			if (isNegative != other.isNegative)
+				return false;
+			return true;
+		}
+		public String format() {
+			if (isJustChar) {
+				return Functions.charLiteral((char)c);
+			} else if (isEpsilon) {
+				return "(epsilon)";
+			} else if (isDot) {
+				return "(dot)";
+			} else if (isCharKlass) {
+				final StringBuilder buff = new StringBuilder();
+				buff.append('[');
+				if (isNegative) {
+					buff.append('!');
+				}
+				for (final char c : cs) {
+					buff.append(Functions.escapedChar(c));
+				}
+				buff.append(']');
+				return buff.toString();
+			} else {
+				return "?";
+			}
 		}
 	}
 	

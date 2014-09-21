@@ -2,12 +2,13 @@ package com.m12i.regex;
 
 final class Token {
 	static enum Kind {
-		CHAR, UNION, STAR, PLUS, LPAREN, RPAREN, EOF;
+		CHAR, UNION, STAR, PLUS, DOT, LPAREN, RPAREN, EOF;
 	}
 	private final static char nullChar = '\u0000';
 	static final Token UNION = new Token(nullChar, Kind.UNION);
 	static final Token STAR = new Token(nullChar, Kind.STAR);
 	static final Token PLUS = new Token(nullChar, Kind.PLUS);
+	static final Token DOT = new Token(nullChar, Kind.DOT);
 	static final Token LPAREN = new Token(nullChar, Kind.LPAREN);
 	static final Token RPAREN = new Token(nullChar, Kind.RPAREN);
 	static final Token EOF = new Token(nullChar, Kind.EOF);
