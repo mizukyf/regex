@@ -127,7 +127,7 @@ final class NFA {
 	 * @param states 初期状態
 	 * @return 初期状態およびそこから空文字（イプシロン）により遷移可能な状態のセット
 	 */
-	long[] epsilongExpand(final long[] states) {
+	long[] epsilonExpand(final long[] states) {
 		final Queue<Long> todo = Functions.queue(states);
 		final Set<Long> done = new HashSet<Long>();
 		
@@ -148,12 +148,12 @@ final class NFA {
 	}
 	/**
 	 * 空文字状態遷移を行う.
-	 * {@link #epsilongExpand(long[])}とのちがいは
+	 * {@link #epsilonExpand(long[])}とのちがいは
 	 * 入力となる初期状態がレシーバのNFAオブジェクトから供給されることだけです。
 	 * @return 初期状態およびそこから空文字（イプシロン）により遷移可能な状態のセット
 	 */
-	long[] epsilongExpand() {
-		return epsilongExpand(Functions.array(from));
+	long[] epsilonExpand() {
+		return epsilonExpand(Functions.array(from));
 	}
 	/**
 	 * NFAオブジェクトをもとにして{@link DFA}オブジェクトを導出する.

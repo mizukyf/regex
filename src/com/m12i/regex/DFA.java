@@ -133,7 +133,7 @@ final class DFA {
 	 */
 	DFA(final NFA nfa) {
 		this.nfa = nfa;
-		this.froms = nfa.epsilongExpand();
+		this.froms = nfa.epsilonExpand();
 		this.accepts = new NonDisjoinSets(nfa.accepts);
 	}
 	
@@ -153,7 +153,7 @@ final class DFA {
 			for (final long from : froms) {
 				set.addAll(Functions.set(nfa.transition(from, by)));
 			}
-			final long[] accepts = nfa.epsilongExpand(Functions.array(set));
+			final long[] accepts = nfa.epsilonExpand(Functions.array(set));
 			cache.put(froms, by, accepts);
 			return accepts;
 		}
