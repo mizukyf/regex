@@ -165,7 +165,7 @@ final class Char {
 			final StringBuilder buff = new StringBuilder();
 			buff.append('[');
 			if (isNegative) {
-				buff.append('!');
+				buff.append('^');
 			}
 			for (final char c : cs) {
 				buff.append(Functions.escapedChar(c));
