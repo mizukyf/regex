@@ -1,6 +1,5 @@
 package com.m12i.regex;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +40,7 @@ final class Char {
 		if (mem != null) {
 			return mem;
 		} else {
-			return new Char(-1, cs, false, false);
+			return new Char(-1, String.valueOf(cs), false, false);
 		}
 	}
 	/**
@@ -55,19 +54,19 @@ final class Char {
 		if (mem != null) {
 			return mem;
 		} else {
-			return new Char(-1, cs, false, true);
+			return new Char(-1, String.valueOf(cs), false, true);
 		}
 	}
 	
 	private final int c;
-	private final char[] cs;
+	private final String cs;
 	final boolean isEpsilon;
 	final boolean isJustChar;
 	final boolean isCharKlass;
 	final boolean isDot;
 	final boolean isNegative;
 	
-	private Char(final int c, final char[] cs, final boolean dot, final boolean nega) {
+	private Char(final int c, final String cs, final boolean dot, final boolean nega) {
 		this.c = c;
 		this.cs = cs;
 		this.isEpsilon = c < 0 && cs == null && !dot;
@@ -93,19 +92,21 @@ final class Char {
 		if (isJustChar) {
 			return this.c == ch;
 		} else if (isCharKlass && !isNegative) {
-			for (final char c: cs) {
-				if (c == ch) {
-					return true;
-				}
-			}
-			return false;
+//			for (final char c: cs) {
+//				if (c == ch) {
+//					return true;
+//				}
+//			}
+//			return false;
+			return -1 < cs.indexOf(ch);
 		} else if (isCharKlass && isNegative) {
-			for (final char c: cs) {
-				if (c == ch) {
-					return false;
-				}
-			}
-			return true;
+//			for (final char c: cs) {
+//				if (c == ch) {
+//					return false;
+//				}
+//			}
+//			return true;
+			return -1 == cs.indexOf(ch);
 		} else if (isDot) {
 			return true;
 		} else {
@@ -117,7 +118,7 @@ final class Char {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + c;
-		result = prime * result + Arrays.hashCode(cs);
+		result = prime * result + ((cs == null) ? 0 : cs.hashCode());
 		result = prime * result + (isCharKlass ? 1231 : 1237);
 		result = prime * result + (isDot ? 1231 : 1237);
 		result = prime * result + (isEpsilon ? 1231 : 1237);
@@ -136,7 +137,10 @@ final class Char {
 		Char other = (Char) obj;
 		if (c != other.c)
 			return false;
-		if (!Arrays.equals(cs, other.cs))
+		if (cs == null) {
+			if (other.cs != null)
+				return false;
+		} else if (!cs.equals(other.cs))
 			return false;
 		if (isCharKlass != other.isCharKlass)
 			return false;
@@ -167,9 +171,7 @@ final class Char {
 			if (isNegative) {
 				buff.append('^');
 			}
-			for (final char c : cs) {
-				buff.append(Functions.escapedChar(c));
-			}
+			buff.append(cs);
 			buff.append(']');
 			return buff.toString();
 		} else {
