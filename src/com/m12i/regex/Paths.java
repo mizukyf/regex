@@ -59,14 +59,23 @@ final class Paths {
 	private final Map<Long, Key[]> klassKeysMap = new HashMap<Long, Key[]>();
 	
 	/**
-	 * 初期状態と入力文字から状態遷移パスを取得する.
-	 * @param from 
-	 * @param by
-	 * @return
+	 * 初期状態と入力文字をキーにして受理状態セットを取得する.
+	 * 入力文字は{@link Char}オブジェクトのかたちで指定します。
+	 * このオブジェクトは文字そのもののほか、文字クラスやドット、空文字（イプシロン）もあらわします。
+	 * @param from 初期状態
+	 * @param by 入力文字
+	 * @return 受理状態セット
 	 */
 	long[] get(final long from, final Char by) {
 		return acceptsMap.get(new Key(from, by));
 	}
+	/**
+	 * 初期状態と入力文字をキーにして受理状態セットを取得する.
+	 * 入力文字は内部的に保持されている文字クラスやドットの情報とも照合されます。
+	 * @param from 初期状態
+	 * @param by 入力文字
+	 * @return 受理状態
+	 */
 	long[] get(final long from, final char by) {
 		long[] result = acceptsMap.get(new Key(from, Char.just(by)));
 		if (result == null) {
@@ -86,9 +95,20 @@ final class Paths {
 		}
 		return result;
 	}
+	/**
+	 * 初期状態と空文字（イプシロン）により状態遷移パスをたどり受理状態セットを返す.
+	 * @param from 初期状態
+	 * @return 受理状態セット
+	 */
 	long[] get(final long from) {
 		return acceptsMap.get(new Key(from));
 	}
+	/**
+	 * 初期状態と入力文字をキーにして受理状態セットを登録する.
+	 * @param from 初期状態
+	 * @param by 入力文字
+	 * @param accepts 受理状態セット
+	 */
 	void put(final long from, final Char by, final long[] accepts) {
 		if (by.isEpsilon) {
 			put(from, accepts);
@@ -108,9 +128,18 @@ final class Paths {
 			acceptsMap.put(k, accepts);
 		}
 	}
+	/**
+	 * 初期状態と空文字（イプシロン）をキーにして受理状態セットを登録する.
+	 * @param from 初期状態
+	 * @param accepts 受理状態セット
+	 */
 	void put(final long from, final long[] accepts) {
 		acceptsMap.put(new Key(from), accepts);
 	}
+	/**
+	 * 状態遷移パス情報をコピーして取り込む.
+	 * @param that 取り込み元
+	 */
 	void include(final Paths that) {
 		this.acceptsMap.putAll(that.acceptsMap);
 		this.klassKeysMap.putAll(that.klassKeysMap);

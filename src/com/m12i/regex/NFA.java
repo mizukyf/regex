@@ -21,6 +21,11 @@ final class NFA {
 		final long[] accepts;
 		private final Paths paths = new Paths();
 		
+		/**
+		 * 初期状態と受理状態セットをもとにオブジェクトを初期化する.
+		 * @param from 初期状態
+		 * @param accepts 受理状態セット
+		 */
 		Fragment(final long from, final long... accepts) {
 			this.from = from;
 			this.accepts = accepts;
@@ -28,7 +33,7 @@ final class NFA {
 		
 		/**
 		 * 空文字（イプシロン）による状態遷移パスを追加する.
-		 * @param to 受理状態
+		 * @param to 受理状態セット
 		 */
 		void connectWithEpsilon(final long[] to) {
 			connectWithEpsilon(this.from, to);
@@ -36,7 +41,7 @@ final class NFA {
 		/**
 		 * 空文字（イプシロン）による状態遷移パスを追加する.
 		 * @param from 初期状態
-		 * @param to 受理状態
+		 * @param to 受理状態セット
 		 */
 		void connectWithEpsilon(final long from, final long[] to) {
 			final long[] mem = paths.get(from);
@@ -50,7 +55,7 @@ final class NFA {
 		 * 状態遷移パスを追加する.
 		 * 初期状態はレシーバ・オブジェクトのそれが利用される。
 		 * @param by 入力文字
-		 * @param to 受理状態
+		 * @param to 受理状態セット
 		 */
 		void connect(final Char by, final long[] to) {
 			connect(this.from, by, to);
@@ -59,7 +64,7 @@ final class NFA {
 		 * 状態遷移パスを追加する.
 		 * @param from 初期状態
 		 * @param by 入力文字
-		 * @param to 受理状態
+		 * @param to 受理状態セット
 		 */
 		void connect(final long from, final Char by, final long[] to) {
 			final long[] mem = paths.get(from, by);
