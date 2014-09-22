@@ -140,7 +140,7 @@ final class Char {
 		int result = 1;
 		result = prime * result + c;
 		result = prime * result + ((cs == null) ? 0 : cs.hashCode());
-		result = prime * result + ((kind == null) ? 0 : kind.hashCode());
+		result = prime * result + kind.hashCode();
 		return result;
 	}
 	@Override

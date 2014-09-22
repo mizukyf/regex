@@ -31,16 +31,16 @@ final class Paths {
 			this.hash = makeHashCode();
 		}
 		
-		@Override
-		public int hashCode() {
-			return hash;
-		}
 		private int makeHashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((by == null) ? 0 : by.hashCode());
-			result = prime * result + (int) (from ^ (from >>> 32));
+			result = prime * result + by.hashCode();
+			result = prime * result + from.hashCode();
 			return result;
+		}
+		@Override
+		public int hashCode() {
+			return hash;
 		}
 		@Override
 		public boolean equals(Object obj) {
@@ -51,12 +51,9 @@ final class Paths {
 			if (getClass() != obj.getClass())
 				return false;
 			Key other = (Key) obj;
-			if (by == null) {
-				if (other.by != null)
-					return false;
-			} else if (!by.equals(other.by))
+			if (!by.equals(other.by))
 				return false;
-			if (from != other.from)
+			if (!from.equals(other.from))
 				return false;
 			return true;
 		}
