@@ -2,9 +2,6 @@ package com.m12i.regex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * パターンマッチおよびその準備手続きのなかで使用するヘルパー関数.
@@ -113,15 +110,6 @@ final class Functions {
 		}
 		return r;
 	}
-	static Set<Long> set(final long...array) {
-		final Set<Long> r = new HashSet<Long>();
-		if (array != null) {
-			for (final long n : array) {
-				r.add(n);
-			}
-		}
-		return r;
-	}
 	static long[] array(final long n) {
 		return new long[]{n};
 	}
@@ -131,12 +119,5 @@ final class Functions {
 			r.add(e);
 		}
 		return r;
-	}
-	static char[] array(final List<Character> list) {
-		final char[] result = new char[list.size()];
-		for (int i = 0; i < list.size(); i ++) {
-			result[i] = list.get(i);
-		}
-		return result;
 	}
 }
