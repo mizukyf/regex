@@ -66,7 +66,7 @@ final class DFA {
 	}
 	static final class NonDisjoinSets {
 		private final Long[] inner;
-		NonDisjoinSets(final Long...es) {
+		private NonDisjoinSets(final Long...es) {
 			inner = es;
 		}
 		boolean contains(final Long...other) {
