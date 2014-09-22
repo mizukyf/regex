@@ -163,37 +163,34 @@ final class DFA {
 		} else {
 			// キャッシュになければNFAオブジェクトを通じて状態遷移後の受理状態を取得する
 			// 受理状態セットを一時的に格納するリストを初期化
-			final ArrayList<Long> acceptList = new ArrayList<Long>();
+			final Set<Long> acceptList = new HashSet<Long>();
 			// DFAの初期状態（NFAの初期状態の集合）を使ってループ処理
 			for (final long from : froms) {
 				// 初期状態と入力文字をキーにしてNFAオブジェクトに問い合わせ
 				for (final long accept : nfa.transition(from, by)) {
 					// 取得できた受理状態をリストに登録
-					acceptList.add(accept);
-					// 受理状態をキーにしてイプシロン展開結果のキャッシュを検索
-					final ArrayList<Long> expanded = epsilonExpandCache.get(accept);
-					if (expanded != null) {
-						//　2次キャッシュに登録済み展開結果があればそれを使用
-						acceptList.addAll(expanded);
-					} else {
-						// 存在しない場合は展開処理を実施
-						final ArrayList<Long> expandedNow = epsilonExpand(accept);
-						// 結果をキャッシュに登録
-						epsilonExpandCache.put(accept, expandedNow);
-						// 展開結果を受理状態セットに追加
-						acceptList.addAll(expandedNow);
+					if (acceptList.add(accept)) {
+						// 受理状態をキーにしてイプシロン展開結果のキャッシュを検索
+						final ArrayList<Long> expanded = epsilonExpandCache.get(accept);
+						if (expanded != null) {
+							//　2次キャッシュに登録済み展開結果があればそれを使用
+							acceptList.addAll(expanded);
+						} else {
+							// 存在しない場合は展開処理を実施
+							final ArrayList<Long> expandedNow = epsilonExpand(accept);
+							// 結果をキャッシュに登録
+							epsilonExpandCache.put(accept, expandedNow);
+							// 展開結果を受理状態セットに追加
+							acceptList.addAll(expandedNow);
+						}
 					}
 				}
 			}
-			// 個別にイプシロン展開を行う場合どうしても重複が発生する
-			// Setを使用して重複除去を実施する
-			work.addAll(acceptList);
-			final long[] accepts = new long[work.size()];
+			final long[] accepts = new long[acceptList.size()];
 			int i = 0;
-			for (final long e : work) {
+			for (final long e : acceptList) {
 				accepts[i ++] = e;
 			}
-			work.clear();
 
 			// 最終的にできあがった受理状態セットをキャッシュに登録
 			cache.put(froms, by, accepts);
@@ -201,7 +198,6 @@ final class DFA {
 			return accepts;
 		}
 	}
-	private final Set<Long> work = new HashSet<Long>();
 //	/**
 //	 * 空文字状態遷移を行う.
 //	 * 受理状態セットを受け取り、それらの状態および状態から空文字（イプシロン）により
@@ -282,7 +278,7 @@ final class DFA {
 		final ArrayList<Long> acceptList = epsilonExpand(nfa.from);
 		final long[] result = new long[acceptList.size()];
 		for (int i = 0; i < acceptList.size(); i ++) {
-			result[i] = acceptList.get(0);
+			result[i] = acceptList.get(i);
 		}
 		return result;
 	}
