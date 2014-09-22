@@ -147,37 +147,56 @@ final class DFA {
 	 * @return 受理状態
 	 */
 	long[] transition(final long[] froms, final char by) {
-		final long[] mem = cache.get(froms, by);
-		if (mem != null) {
-			return mem;
+		// 与えられた初期状態と入力文字をキーにしてキャッシュを検索
+		final long[] cached = cache.get(froms, by);
+		if (cached != null) {
+			// キャッシュに登録済み受理状態があればそれを返す
+			return cached;
 		} else {
+			// キャッシュになければNFAオブジェクトを通じて状態遷移後の受理状態を取得する
+			// 受理状態セットを一時的に格納するリストを初期化
 			final ArrayList<Long> acceptList = new ArrayList<Long>();
+			// DFAの初期状態（NFAの初期状態の集合）を使ってループ処理
 			for (final long from : froms) {
+				// 初期状態と入力文字をキーにしてNFAオブジェクトに問い合わせ
 				for (final long accept : nfa.transition(from, by)) {
+					// 取得できた受理状態をリストに登録
 					acceptList.add(accept);
 				}
 			}
+			// 受理状態セットを使用してイプシロン展開を実行
 			final long[] accepts = epsilonExpand(acceptList);
+			// 最終的にできあがった受理状態セットをキャッシュに登録
 			cache.put(froms, by, accepts);
+			// 呼び出し元に返す
 			return accepts;
 		}
 	}
 	/**
 	 * 空文字状態遷移を行う.
-	 * 初期状態セットを受け取り、それら初期状態および初期状態から空文字（イプシロン）により
-	 * 状態遷移可能な状態のすべてを内包するセットを返します.
-	 * @param states 初期状態
-	 * @return 初期状態およびそこから空文字（イプシロン）により遷移可能な状態のセット
+	 * 受理状態セットを受け取り、それらの状態および状態から空文字（イプシロン）により
+	 * 状態遷移可能な受理状態のいずれもすべてを内包するセットを返します.
+	 * @param todo 処理待ち初期状態セット
+	 * @return 受理状態およびそこから空文字（イプシロン）により遷移可能な受理状態のセット
 	 */
 	private long[] epsilonExpand(final ArrayList<Long> todo) {
+		// 処理済み初期状態を記録するためのセットを初期化
 		final Set<Long> done = new HashSet<Long>();
 		
+		// 引数として渡された受理状態セットの未処理要素がなくなるまでループ
 		while (!todo.isEmpty()) {
+			// 要素（受理状態）を1つ取り出す
 			final long s = todo.remove(0);
+			// 処理済みセットに登録し、同時に、「登録時点ですでに処理済みだったか」を検証
+			// すでに登録済みだったならこのあとの処理はスキップする
 			if (done.add(s)) {
+				// この受理状態を初期状態として空文字（イプシロン）により遷移可能な受理状態セットを取得
 				final long[] nexts = nfa.transition(s);
+				// 結果がnullでなければ遷移可能な受理状態があるということ
 				if (nexts != null) {
+					// それらの状態セットについてループ処理
 					for (final long next : nexts) {
+						// もし処理済みセットに存在しないものであれば処理待ちセットに登録
 						if (!done.contains(next)) {
 							todo.add(next);
 						}
@@ -185,7 +204,7 @@ final class DFA {
 				}
 			}
 		}
-		
+		// 処理済みセットを配列に変化して呼び出し元に返す
 		final long[] array = new long[done.size()];
 		int i = 0;
 		for (final long n : done) {
@@ -196,8 +215,8 @@ final class DFA {
 	/**
 	 * 空文字状態遷移を行う.
 	 * {@link #epsilonExpand(long[])}とのちがいは
-	 * 入力となる初期状態がレシーバのNFAオブジェクトから供給されることだけです。
-	 * @return 初期状態およびそこから空文字（イプシロン）により遷移可能な状態のセット
+	 * 入力となる処理待ち受理状態がレシーバに内包されたNFAオブジェクトから供給されることだけです。
+	 * @return 受理状態およびそこから空文字（イプシロン）により遷移可能な受理状態のセット
 	 */
 	private long[] epsilonExpand() {
 		final ArrayList<Long> acceptList = new ArrayList<Long>();
