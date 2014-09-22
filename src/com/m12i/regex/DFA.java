@@ -135,6 +135,7 @@ final class DFA {
 	private final long[] froms;
 	private final NonDisjoinSets accepts;
 	private final Cache cache = new Cache();
+	private final Map<Long,ArrayList<Long>> epsilonExpandCache = new HashMap<Long, ArrayList<Long>>();
 	
 	/**
 	 * {@link NFA}オブジェクトをもとにDFAオブジェクトの初期化を行う.
@@ -169,26 +170,83 @@ final class DFA {
 				for (final long accept : nfa.transition(from, by)) {
 					// 取得できた受理状態をリストに登録
 					acceptList.add(accept);
+					// 受理状態をキーにしてイプシロン展開結果のキャッシュを検索
+					final ArrayList<Long> expanded = epsilonExpandCache.get(accept);
+					if (expanded != null) {
+						//　2次キャッシュに登録済み展開結果があればそれを使用
+						acceptList.addAll(expanded);
+					} else {
+						// 存在しない場合は展開処理を実施
+						final ArrayList<Long> expandedNow = epsilonExpand(accept);
+						// 結果をキャッシュに登録
+						epsilonExpandCache.put(accept, expandedNow);
+						// 展開結果を受理状態セットに追加
+						acceptList.addAll(expandedNow);
+					}
 				}
 			}
-			// 受理状態セットを使用してイプシロン展開を実行
-			final long[] accepts = epsilonExpand(acceptList);
+			// 個別にイプシロン展開を行う場合どうしても重複が発生する
+			// Setを使用して重複除去を実施する
+			work.addAll(acceptList);
+			final long[] accepts = new long[work.size()];
+			int i = 0;
+			for (final long e : work) {
+				accepts[i ++] = e;
+			}
+			work.clear();
+
 			// 最終的にできあがった受理状態セットをキャッシュに登録
 			cache.put(froms, by, accepts);
 			// 呼び出し元に返す
 			return accepts;
 		}
 	}
-	/**
-	 * 空文字状態遷移を行う.
-	 * 受理状態セットを受け取り、それらの状態および状態から空文字（イプシロン）により
-	 * 状態遷移可能な受理状態のいずれもすべてを内包するセットを返します.
-	 * @param todo 処理待ち初期状態セット
-	 * @return 受理状態およびそこから空文字（イプシロン）により遷移可能な受理状態のセット
-	 */
-	private long[] epsilonExpand(final ArrayList<Long> todo) {
+	private final Set<Long> work = new HashSet<Long>();
+//	/**
+//	 * 空文字状態遷移を行う.
+//	 * 受理状態セットを受け取り、それらの状態および状態から空文字（イプシロン）により
+//	 * 状態遷移可能な受理状態のいずれもすべてを内包するセットを返します.
+//	 * @param todo 処理待ち初期状態セット
+//	 * @return 受理状態およびそこから空文字（イプシロン）により遷移可能な受理状態のセット
+//	 */
+//	private long[] epsilonExpand(final ArrayList<Long> todo) {
+//		// 処理済み初期状態を記録するためのセットを初期化
+//		final Set<Long> done = new HashSet<Long>();
+//		
+//		// 引数として渡された受理状態セットの未処理要素がなくなるまでループ
+//		while (!todo.isEmpty()) {
+//			// 要素（受理状態）を1つ取り出す
+//			final long s = todo.remove(0);
+//			// 処理済みセットに登録し、同時に、「登録時点ですでに処理済みだったか」を検証
+//			// すでに登録済みだったならこのあとの処理はスキップする
+//			if (done.add(s)) {
+//				// この受理状態を初期状態として空文字（イプシロン）により遷移可能な受理状態セットを取得
+//				final long[] nexts = nfa.transition(s);
+//				// 結果がnullでなければ遷移可能な受理状態があるということ
+//				if (nexts != null) {
+//					// それらの状態セットについてループ処理
+//					for (final long next : nexts) {
+//						// もし処理済みセットに存在しないものであれば処理待ちセットに登録
+//						if (!done.contains(next)) {
+//							todo.add(next);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		// 処理済みセットを配列に変化して呼び出し元に返す
+//		final long[] array = new long[done.size()];
+//		int i = 0;
+//		for (final long n : done) {
+//			array[i++] = n;
+//		}
+//		return array;
+//	}
+	private ArrayList<Long> epsilonExpand(final long seed) {
 		// 処理済み初期状態を記録するためのセットを初期化
-		final Set<Long> done = new HashSet<Long>();
+		final ArrayList<Long> done = new ArrayList<Long>();
+		final ArrayList<Long> todo = new ArrayList<Long>();
+		todo.add(seed);
 		
 		// 引数として渡された受理状態セットの未処理要素がなくなるまでループ
 		while (!todo.isEmpty()) {
@@ -196,7 +254,8 @@ final class DFA {
 			final long s = todo.remove(0);
 			// 処理済みセットに登録し、同時に、「登録時点ですでに処理済みだったか」を検証
 			// すでに登録済みだったならこのあとの処理はスキップする
-			if (done.add(s)) {
+//			if (!done.contains(s)) {
+				done.add(s);
 				// この受理状態を初期状態として空文字（イプシロン）により遷移可能な受理状態セットを取得
 				final long[] nexts = nfa.transition(s);
 				// 結果がnullでなければ遷移可能な受理状態があるということ
@@ -209,15 +268,9 @@ final class DFA {
 						}
 					}
 				}
-			}
+//			}
 		}
-		// 処理済みセットを配列に変化して呼び出し元に返す
-		final long[] array = new long[done.size()];
-		int i = 0;
-		for (final long n : done) {
-			array[i++] = n;
-		}
-		return array;
+		return done;
 	}
 	/**
 	 * 空文字状態遷移を行う.
@@ -226,9 +279,12 @@ final class DFA {
 	 * @return 受理状態およびそこから空文字（イプシロン）により遷移可能な受理状態のセット
 	 */
 	private long[] epsilonExpand() {
-		final ArrayList<Long> acceptList = new ArrayList<Long>();
-		acceptList.add(nfa.from);
-		return epsilonExpand(acceptList);
+		final ArrayList<Long> acceptList = epsilonExpand(nfa.from);
+		final long[] result = new long[acceptList.size()];
+		for (int i = 0; i < acceptList.size(); i ++) {
+			result[i] = acceptList.get(0);
+		}
+		return result;
 	}
 	/**
 	 * このDFAオブジェクトをもとに{@link Runtime}オブジェクトを導出・初期化します.
