@@ -89,7 +89,7 @@ public final class Regex {
 		this.pattern = pattern;
 		final Node node = new Parser(new Lexer(pattern)).parse();
 		Functions.dump(node);
-		final NFA.Fragment frag = node.assemple(IDFactory.create());
+		final NFA.Fragment frag = node.assemble(IDFactory.create());
 		final NFA nfa = frag.build();
 		Functions.dump(nfa);
 		this.dfa = nfa.transform();

@@ -103,7 +103,7 @@ final class Node {
 	 * @param factory 各状態にIDを初番するためのファクトリ
 	 * @return {@link Fragment}オブジェクト
 	 */
-	Fragment assemple(IDFactory factory) {
+	Fragment assemble(IDFactory factory) {
 		if (kind == Node.Kind.CHAR) {
 			final long s0 = factory.product();
 			final long s1 = factory.product();
@@ -129,8 +129,8 @@ final class Node {
 			fragN.connect(Char.DOT, Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.UNION) {
-			final Fragment frag0 = left.assemple(factory);
-			final Fragment frag1 = right.assemple(factory);
+			final Fragment frag0 = left.assemble(factory);
+			final Fragment frag1 = right.assemble(factory);
 			final long sN = factory.product();
 			final Fragment fragN = new Fragment(sN, Functions.concat(frag0.accepts, frag1.accepts));
 			fragN.include(frag0, frag1);
@@ -138,8 +138,8 @@ final class Node {
 			fragN.connectWithEpsilon(Functions.array(frag1.from));
 			return fragN;
 		} else if (kind == Node.Kind.CONCAT) {
-			final Fragment frag0 = left.assemple(factory);
-			final Fragment frag1 = right.assemple(factory);
+			final Fragment frag0 = left.assemble(factory);
+			final Fragment frag1 = right.assemble(factory);
 			final Fragment fragN = new Fragment(frag0.from, frag1.accepts);
 			fragN.include(frag0, frag1);
 			for (final long s : frag0.accepts) {
@@ -147,7 +147,7 @@ final class Node {
 			}
 			return fragN;
 		} else if (kind == Node.Kind.STAR) {
-			final Fragment frag0 = left.assemple(factory);
+			final Fragment frag0 = left.assemble(factory);
 			final long sN = factory.product();
 			final Fragment fragN = new Fragment(sN, Functions.concat(frag0.accepts, sN));
 			fragN.include(frag0);
