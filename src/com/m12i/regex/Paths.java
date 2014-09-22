@@ -18,6 +18,7 @@ final class Paths {
 	private final class Key {
 		final long from;
 		final Char by;
+		
 		private Key(final long from, final Char by) {
 			this.from = from;
 			this.by = by;
@@ -26,6 +27,7 @@ final class Paths {
 			this.from = from;
 			this.by = Char.EPSILON;
 		}
+		
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -110,14 +112,14 @@ final class Paths {
 	 * @param accepts 受理状態セット
 	 */
 	void put(final long from, final Char by, final long[] accepts) {
-		if (by.isEpsilon) {
+		if (by.kind == Char.Kind.EPSILON) {
 			put(from, accepts);
 		} else {
 			final Key k = new Key(from, by);
-			if (by.isDot) {
+			if (by.kind == Char.Kind.DOT) {
 				dotKeyMap.put(from, k);
 			}
-			if (by.isCharKlass) {
+			if (by.kind == Char.Kind.KLASS || by.kind == Char.Kind.NEGATIVE_KLASS) {
 				final Key[] keys = klassKeysMap.get(from);
 				if (keys != null) {
 					klassKeysMap.put(from, concat(keys, k));
