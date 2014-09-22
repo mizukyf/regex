@@ -14,9 +14,9 @@ final class Char {
 	
 	static final Char EPSILON = new Char(-1, null, Kind.EPSILON);
 	static final Char DOT = new Char(-1, null, Kind.DOT);
-	private static final Map<Character,Char> justCharCache = new HashMap<Character,Char>();
-	private static final Map<String,Char> charKlassCache = new HashMap<String,Char>();
-	private static final Map<String,Char> negaCharKlassCache = new HashMap<String,Char>();
+	private static final Map<Character,Char> kharCache = new HashMap<Character,Char>();
+	private static final Map<String,Char> klassCache = new HashMap<String,Char>();
+	private static final Map<String,Char> negativeKlassCache = new HashMap<String,Char>();
 	
 	/**
 	 * 通常の文字をあらわす{@link Char}オブジェクトを返す.
@@ -26,13 +26,17 @@ final class Char {
 	static Char khar(final char c) {
 		// もし同じ意味のクラスがすでに定義済みならそれを返す
 		// ＊これにより同じ意味のオブジェクトが重複して生成されるのを防止する
-		final Char mem = justCharCache.get(c);
-		if (mem != null) {
-			return mem;
+		// ＊ただしこのロジックはスレッド・アンセーフである
+		final Char cached = kharCache.get(c);
+		if (cached != null) {
+			// 定義済みインスタンスがあればそれを返す
+			return cached;
 		} else {
-			final Char ch = new Char(c, null, Kind.CHAR);
-			justCharCache.put(c, ch);
-			return ch;
+			// 未定義であれば新たにインスタンスを生成
+			final Char result = new Char(c, null, Kind.CHAR);
+			// キャッシュに登録してから呼び出し元に返す
+			kharCache.put(c, result);
+			return result;
 		}
 	}
 	/**
@@ -44,13 +48,17 @@ final class Char {
 	static Char klass(final String klass) {
 		// もし同じ意味のクラスがすでに定義済みならそれを返す
 		// ＊これにより同じ意味のオブジェクトが重複して生成されるのを防止する
-		final Char mem = charKlassCache.get(klass);
-		if (mem != null) {
-			return mem;
+		// ＊ただしこのロジックはスレッド・アンセーフである
+		final Char cached = klassCache.get(klass);
+		if (cached != null) {
+			// 定義済みインスタンスがあればそれを返す
+			return cached;
 		} else {
-			final Char ch = new Char(-1, klass, Kind.KLASS);
-			charKlassCache.put(klass, ch);
-			return ch;
+			// 未定義であれば新たにインスタンスを生成
+			final Char result = new Char(-1, klass, Kind.KLASS);
+			// キャッシュに登録してから呼び出し元に返す
+			klassCache.put(klass, result);
+			return result;
 		}
 	}
 	/**
@@ -62,16 +70,23 @@ final class Char {
 	static Char negativeKlass(final String klass) {
 		// もし同じ意味のクラスがすでに定義済みならそれを返す
 		// ＊これにより同じ意味のオブジェクトが重複して生成されるのを防止する
-		final Char mem = negaCharKlassCache.get(klass);
-		if (mem != null) {
-			return mem;
+		// ＊ただしこのロジックはスレッド・アンセーフである
+		final Char cached = negativeKlassCache.get(klass);
+		if (cached != null) {
+			// 定義済みインスタンスがあればそれを返す
+			return cached;
 		} else {
-			final Char ch = new Char(-1, klass, Kind.NEGATIVE_KLASS);
-			negaCharKlassCache.put(klass, ch);
-			return ch;
+			// 未定義であれば新たにインスタンスを生成
+			final Char result = new Char(-1, klass, Kind.NEGATIVE_KLASS);
+			// キャッシュに登録してから呼び出し元に返す
+			negativeKlassCache.put(klass, result);
+			return result;
 		}
 	}
 	
+	/**
+	 * このオブジェクトの種別.
+	 */
 	final Kind kind;
 	private final int c;
 	private final String cs;
@@ -100,14 +115,19 @@ final class Char {
 	 */
 	boolean matches(final char ch) {
 		if (kind == Kind.CHAR) {
+			// 文字そのものの場合、入力文字との単純比較でOK
 			return this.c == ch;
 		} else if (kind == Kind.KLASS) {
+			// 文字クラスの場合、文字集合（cs）のなかに入力文字が含まれればOK
 			return -1 < cs.indexOf(ch);
 		} else if (kind == Kind.NEGATIVE_KLASS) {
+			// 否定文字クラスの場合、文字集合（cs）のなかに入力文字が含まれなければOK
 			return -1 == cs.indexOf(ch);
 		} else if (kind == Kind.DOT) {
+			// ドットの場合、入力文字がいかなるものでもOK
 			return true;
 		} else {
+			// それ以外の場合（空文字を想定）、入力文字がいかなるものでもNG
 			return false;
 		}
 	}
