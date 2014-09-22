@@ -134,7 +134,10 @@ final class DFA {
 	private final NFA nfa;
 	private final Long[] froms;
 	private final NonDisjoinSets accepts;
-	private final Cache cache = new Cache();
+	
+	// 1次キャッシュ（DFAの初期状態と入力文字をキーにして受理状態セットを管理）
+	private final Cache transitionCache = new Cache();
+	// 2次キャッシュ（NFAの受理状態をキーにしてイプシロン展開後の受理状態セットを管理）
 	private final Map<Long,ArrayList<Long>> epsilonExpandCache = new HashMap<Long, ArrayList<Long>>();
 	
 	/**
@@ -156,13 +159,13 @@ final class DFA {
 	 */
 	Long[] transition(final Long[] froms, final char by) {
 		// 与えられた初期状態と入力文字をキーにしてキャッシュを検索
-		final Long[] cached = cache.get(froms, by);
+		final Long[] cached = transitionCache.get(froms, by);
 		if (cached != null) {
 			// キャッシュに登録済み受理状態があればそれを返す
 			return cached;
 		} else {
 			// キャッシュになければNFAオブジェクトを通じて状態遷移後の受理状態を取得する
-			// 受理状態セットを一時的に格納するリストを初期化
+			// 受理状態セットを一時的に格納するセットを初期化
 			final Set<Long> acceptList = new HashSet<Long>();
 			// DFAの初期状態（NFAの初期状態の集合）を使ってループ処理
 			for (final Long from : froms) {
@@ -173,7 +176,7 @@ final class DFA {
 						// 受理状態をキーにしてイプシロン展開結果のキャッシュを検索
 						final ArrayList<Long> expanded = epsilonExpandCache.get(accept);
 						if (expanded != null) {
-							//　2次キャッシュに登録済み展開結果があればそれを使用
+							//　キャッシュに登録済み展開結果があればそれを使用
 							acceptList.addAll(expanded);
 						} else {
 							// 存在しない場合は展開処理を実施
@@ -186,10 +189,10 @@ final class DFA {
 					}
 				}
 			}
+			// セットから配列に変換
 			final Long[] accepts = acceptList.toArray(new Long[acceptList.size()]);
-
 			// 最終的にできあがった受理状態セットをキャッシュに登録
-			cache.put(froms, by, accepts);
+			transitionCache.put(froms, by, accepts);
 			// 呼び出し元に返す
 			return accepts;
 		}
@@ -198,6 +201,8 @@ final class DFA {
 		// 処理済み初期状態を記録するためのセットを初期化
 		final ArrayList<Long> done = new ArrayList<Long>();
 		final ArrayList<Long> todo = new ArrayList<Long>();
+		
+		// 再帰的手続きのための起点となる要素を追加
 		todo.add(seed);
 		
 		// 引数として渡された受理状態セットの未処理要素がなくなるまでループ
@@ -219,6 +224,8 @@ final class DFA {
 				}
 			}
 		}
+		
+		// 展開結果を呼び出し元に返す
 		return done;
 	}
 	/**
