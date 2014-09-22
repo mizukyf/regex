@@ -15,11 +15,11 @@ final class NFA {
 		/**
 		 * 初期状態.
 		 */
-		final long from;
+		final Long from;
 		/**
 		 * 受理状態セット.
 		 */
-		final long[] accepts;
+		final Long[] accepts;
 		private final Paths paths = new Paths();
 		
 		/**
@@ -27,7 +27,7 @@ final class NFA {
 		 * @param from 初期状態
 		 * @param accepts 受理状態セット
 		 */
-		Fragment(final long from, final long... accepts) {
+		Fragment(final Long from, final Long... accepts) {
 			this.from = from;
 			this.accepts = accepts;
 		}
@@ -36,7 +36,7 @@ final class NFA {
 		 * 空文字（イプシロン）による状態遷移パスを追加する.
 		 * @param to 受理状態セット
 		 */
-		void connectWithEpsilon(final long[] to) {
+		void connectWithEpsilon(final Long[] to) {
 			connectWithEpsilon(this.from, to);
 		}
 		/**
@@ -44,8 +44,8 @@ final class NFA {
 		 * @param from 初期状態
 		 * @param to 受理状態セット
 		 */
-		void connectWithEpsilon(final long from, final long[] to) {
-			final long[] mem = paths.get(from);
+		void connectWithEpsilon(final Long from, final Long[] to) {
+			final Long[] mem = paths.get(from);
 			if (mem != null) {
 				paths.put(from, Functions.concat(mem, to));
 			} else {
@@ -58,7 +58,7 @@ final class NFA {
 		 * @param by 入力文字
 		 * @param to 受理状態セット
 		 */
-		void connect(final Char by, final long[] to) {
+		void connect(final Char by, final Long[] to) {
 			connect(this.from, by, to);
 		}
 		/**
@@ -67,8 +67,8 @@ final class NFA {
 		 * @param by 入力文字
 		 * @param to 受理状態セット
 		 */
-		void connect(final long from, final Char by, final long[] to) {
-			final long[] mem = paths.get(from, by);
+		void connect(final Long from, final Char by, final Long[] to) {
+			final Long[] mem = paths.get(from, by);
 			if (mem != null) {
 				paths.put(from, by, Functions.concat(mem, to));
 			} else {
@@ -94,8 +94,8 @@ final class NFA {
 	}
 	
 	private final Paths paths;
-	final long from;
-	final long[] accepts;
+	final Long from;
+	final Long[] accepts;
 	
 	private NFA(Fragment fragment) {
 		this.paths = fragment.paths;
@@ -109,7 +109,7 @@ final class NFA {
 	 * @param by 入力文字
 	 * @return 受理状態セット
 	 */
-	long[] transition(final long from, final char by) {
+	Long[] transition(final Long from, final char by) {
 		return paths.get(from, by);
 	}
 	/**
@@ -118,7 +118,7 @@ final class NFA {
 	 * @param from 初期状態
 	 * @return 受理状態セット
 	 */
-	long[] transition(final long from) {
+	Long[] transition(final Long from) {
 		return paths.get(from);
 	}
 	/**

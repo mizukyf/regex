@@ -20,7 +20,7 @@ final class DFA {
 	 */
 	static final class Runtime {
 		private final DFA dfa;
-		private long[] currentState;
+		private Long[] currentState;
 		private Runtime(final DFA dfa) {
 			this.dfa = dfa;
 			currentState = dfa.froms;
@@ -65,13 +65,13 @@ final class DFA {
 		}
 	}
 	static final class NonDisjoinSets {
-		private final long[] inner;
-		NonDisjoinSets(final long...es) {
+		private final Long[] inner;
+		NonDisjoinSets(final Long...es) {
 			inner = es;
 		}
-		boolean contains(final long...other) {
-			for (final long n : inner) {
-				for (final long o : other) {
+		boolean contains(final Long...other) {
+			for (final Long n : inner) {
+				for (final Long o : other) {
 					if (n == o) return true;
 				}
 			}
@@ -80,15 +80,15 @@ final class DFA {
 	}
 	/**
 	 * 状態遷移キャッシュ.
-	 * {@link DFA#transition(long[], char)}の処理結果をキャッシュして
+	 * {@link DFA#transition(Long[], char)}の処理結果をキャッシュして
 	 * 同じパラメータで実行される2度目以降の処理の高速化を図ります。
 	 */
 	private static final class Cache {
 		private static final class Key {
-			final long[] froms;
+			final Long[] froms;
 			final char by;
 			private final int hash;
-			Key(final long[] froms, final char by) {
+			Key(final Long[] froms, final char by) {
 				this.froms = froms;
 				this.by = by;
 				// 実際上のイミュータブル・オブジェクトなのでこの時点でハッシュコードも確定する
@@ -122,17 +122,17 @@ final class DFA {
 				return true;
 			}
 		}
-		private final Map<Key, long[]> mem = new HashMap<DFA.Cache.Key, long[]>();
-		long[] get(final long[] froms, final char by) {
+		private final Map<Key, Long[]> mem = new HashMap<DFA.Cache.Key, Long[]>();
+		Long[] get(final Long[] froms, final char by) {
 			return mem.get(new Key(froms, by));
 		}
-		void put(final long[] froms, final char by, final long[] accepts) {
+		void put(final Long[] froms, final char by, final Long[] accepts) {
 			mem.put(new Key(froms, by), accepts);
 		}
 	}
 
 	private final NFA nfa;
-	private final long[] froms;
+	private final Long[] froms;
 	private final NonDisjoinSets accepts;
 	private final Cache cache = new Cache();
 	private final Map<Long,ArrayList<Long>> epsilonExpandCache = new HashMap<Long, ArrayList<Long>>();
@@ -154,9 +154,9 @@ final class DFA {
 	 * @param by 入力文字
 	 * @return 受理状態
 	 */
-	long[] transition(final long[] froms, final char by) {
+	Long[] transition(final Long[] froms, final char by) {
 		// 与えられた初期状態と入力文字をキーにしてキャッシュを検索
-		final long[] cached = cache.get(froms, by);
+		final Long[] cached = cache.get(froms, by);
 		if (cached != null) {
 			// キャッシュに登録済み受理状態があればそれを返す
 			return cached;
@@ -165,9 +165,9 @@ final class DFA {
 			// 受理状態セットを一時的に格納するリストを初期化
 			final Set<Long> acceptList = new HashSet<Long>();
 			// DFAの初期状態（NFAの初期状態の集合）を使ってループ処理
-			for (final long from : froms) {
+			for (final Long from : froms) {
 				// 初期状態と入力文字をキーにしてNFAオブジェクトに問い合わせ
-				for (final long accept : nfa.transition(from, by)) {
+				for (final Long accept : nfa.transition(from, by)) {
 					// 取得できた受理状態をリストに登録
 					if (acceptList.add(accept)) {
 						// 受理状態をキーにしてイプシロン展開結果のキャッシュを検索
@@ -186,11 +186,7 @@ final class DFA {
 					}
 				}
 			}
-			final long[] accepts = new long[acceptList.size()];
-			int i = 0;
-			for (final long e : acceptList) {
-				accepts[i ++] = e;
-			}
+			final Long[] accepts = acceptList.toArray(new Long[acceptList.size()]);
 
 			// 最終的にできあがった受理状態セットをキャッシュに登録
 			cache.put(froms, by, accepts);
@@ -198,7 +194,7 @@ final class DFA {
 			return accepts;
 		}
 	}
-	private ArrayList<Long> epsilonExpand(final long seed) {
+	private ArrayList<Long> epsilonExpand(final Long seed) {
 		// 処理済み初期状態を記録するためのセットを初期化
 		final ArrayList<Long> done = new ArrayList<Long>();
 		final ArrayList<Long> todo = new ArrayList<Long>();
@@ -207,15 +203,15 @@ final class DFA {
 		// 引数として渡された受理状態セットの未処理要素がなくなるまでループ
 		while (!todo.isEmpty()) {
 			// 要素（受理状態）を1つ取り出す
-			final long s = todo.remove(0);
+			final Long s = todo.remove(0);
 			// 処理済みセットに登録
 			done.add(s);
 			// この受理状態を初期状態として空文字（イプシロン）により遷移可能な受理状態セットを取得
-			final long[] nexts = nfa.transition(s);
+			final Long[] nexts = nfa.transition(s);
 			// 結果がnullでなければ遷移可能な受理状態があるということ
 			if (nexts != null) {
 				// それらの状態セットについてループ処理
-				for (final long next : nexts) {
+				for (final Long next : nexts) {
 					// もし処理済みセットに存在しないものであれば処理待ちセットに登録
 					if (!done.contains(next)) {
 						todo.add(next);
@@ -227,17 +223,12 @@ final class DFA {
 	}
 	/**
 	 * 空文字状態遷移を行う.
-	 * {@link #epsilonExpand(long[])}とのちがいは
+	 * {@link #epsilonExpand(Long[])}とのちがいは
 	 * 入力となる処理待ち受理状態がレシーバに内包されたNFAオブジェクトから供給されることだけです。
 	 * @return 受理状態およびそこから空文字（イプシロン）により遷移可能な受理状態のセット
 	 */
-	private long[] epsilonExpand() {
-		final ArrayList<Long> acceptList = epsilonExpand(nfa.from);
-		final long[] result = new long[acceptList.size()];
-		for (int i = 0; i < acceptList.size(); i ++) {
-			result[i] = acceptList.get(i);
-		}
-		return result;
+	private Long[] epsilonExpand() {
+		return epsilonExpand(nfa.from).toArray(new Long[0]);
 	}
 	/**
 	 * このDFAオブジェクトをもとに{@link Runtime}オブジェクトを導出・初期化します.

@@ -101,21 +101,21 @@ final class Functions {
 		}
 		return -1;
 	}
-	static long[] concat(final long[] a, final long... b) {
+	static Long[] concat(final Long[] a, final Long... b) {
 		final int aLen = a.length;
 		final int bLen = b.length;
-		final long[] r = Arrays.copyOf(a, aLen + bLen);
+		final Long[] r = Arrays.copyOf(a, aLen + bLen);
 		for (int i = 0; i < bLen; i ++) {
 			r[i + aLen] = b[i];
 		}
 		return r;
 	}
-	static long[] array(final long n) {
-		return new long[]{n};
+	static Long[] array(final Long n) {
+		return new Long[]{n};
 	}
-	static ArrayList<Long> arrayList(final long...array) {
+	static ArrayList<Long> arrayList(final Long...array) {
 		final ArrayList<Long> r = new ArrayList<Long>();
-		for (final long e : array) {
+		for (final Long e : array) {
 			r.add(e);
 		}
 		return r;

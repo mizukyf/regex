@@ -105,33 +105,33 @@ final class Node {
 	 */
 	Fragment assemble(IDFactory factory) {
 		if (kind == Node.Kind.CHAR) {
-			final long s0 = factory.product();
-			final long s1 = factory.product();
+			final Long s0 = factory.product();
+			final Long s1 = factory.product();
 			final Fragment fragN = new Fragment(s0, s1);
 			fragN.connect(Char.khar(value), Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.KLASS) {
-			final long s0 = factory.product();
-			final long s1 = factory.product();
+			final Long s0 = factory.product();
+			final Long s1 = factory.product();
 			final Fragment fragN = new Fragment(s0, s1);
 			fragN.connect(Char.klass(klass), Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.NEGATIVE_KLASS) {
-			final long s0 = factory.product();
-			final long s1 = factory.product();
+			final Long s0 = factory.product();
+			final Long s1 = factory.product();
 			final Fragment fragN = new Fragment(s0, s1);
 			fragN.connect(Char.negativeKlass(klass), Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.DOT) {
-			final long s0 = factory.product();
-			final long s1 = factory.product();
+			final Long s0 = factory.product();
+			final Long s1 = factory.product();
 			final Fragment fragN = new Fragment(s0, s1);
 			fragN.connect(Char.DOT, Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.UNION) {
 			final Fragment frag0 = left.assemble(factory);
 			final Fragment frag1 = right.assemble(factory);
-			final long sN = factory.product();
+			final Long sN = factory.product();
 			final Fragment fragN = new Fragment(sN, Functions.concat(frag0.accepts, frag1.accepts));
 			fragN.include(frag0, frag1);
 			fragN.connectWithEpsilon(Functions.array(frag0.from));
@@ -142,16 +142,16 @@ final class Node {
 			final Fragment frag1 = right.assemble(factory);
 			final Fragment fragN = new Fragment(frag0.from, frag1.accepts);
 			fragN.include(frag0, frag1);
-			for (final long s : frag0.accepts) {
+			for (final Long s : frag0.accepts) {
 				fragN.connectWithEpsilon(s, Functions.array(frag1.from));
 			}
 			return fragN;
 		} else if (kind == Node.Kind.STAR) {
 			final Fragment frag0 = left.assemble(factory);
-			final long sN = factory.product();
+			final Long sN = factory.product();
 			final Fragment fragN = new Fragment(sN, Functions.concat(frag0.accepts, sN));
 			fragN.include(frag0);
-			for (final long s : frag0.accepts) {
+			for (final Long s : frag0.accepts) {
 				fragN.connectWithEpsilon(s, Functions.array(frag0.from));
 			}
 			fragN.connectWithEpsilon(Functions.array(frag0.from));

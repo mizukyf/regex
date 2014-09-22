@@ -16,16 +16,16 @@ final class Paths {
 	 * 状態遷移パスのマップのためのキー.
 	 */
 	private final class Key {
-		final long from;
+		final Long from;
 		final Char by;
 		private final int hash;
 		
-		private Key(final long from, final Char by) {
+		private Key(final Long from, final Char by) {
 			this.from = from;
 			this.by = by;
 			this.hash = makeHashCode();
 		}
-		private Key(final long from) {
+		private Key(final Long from) {
 			this.from = from;
 			this.by = Char.EPSILON;
 			this.hash = makeHashCode();
@@ -62,7 +62,7 @@ final class Paths {
 		}
 	}
 	
-	private final Map<Key, long[]> acceptsMap = new HashMap<Key, long[]>();
+	private final Map<Key, Long[]> acceptsMap = new HashMap<Key, Long[]>();
 	private final Map<Long, Key> dotKeyMap = new HashMap<Long, Key>();
 	private final Map<Long, Key[]> klassKeysMap = new HashMap<Long, Key[]>();
 	
@@ -74,7 +74,7 @@ final class Paths {
 	 * @param by 入力文字
 	 * @return 受理状態セット
 	 */
-	long[] get(final long from, final Char by) {
+	Long[] get(final Long from, final Char by) {
 		return acceptsMap.get(new Key(from, by));
 	}
 	/**
@@ -84,10 +84,10 @@ final class Paths {
 	 * @param by 入力文字
 	 * @return 受理状態
 	 */
-	long[] get(final long from, final char by) {
-		long[] result = acceptsMap.get(new Key(from, Char.khar(by)));
+	Long[] get(final Long from, final char by) {
+		Long[] result = acceptsMap.get(new Key(from, Char.khar(by)));
 		if (result == null) {
-			result = new long[0];
+			result = new Long[0];
 		}
 		final Key dotKey = dotKeyMap.get(from);
 		if (dotKey != null) {
@@ -108,7 +108,7 @@ final class Paths {
 	 * @param from 初期状態
 	 * @return 受理状態セット
 	 */
-	long[] get(final long from) {
+	Long[] get(final Long from) {
 		return acceptsMap.get(new Key(from));
 	}
 	/**
@@ -117,7 +117,7 @@ final class Paths {
 	 * @param by 入力文字
 	 * @param accepts 受理状態セット
 	 */
-	void put(final long from, final Char by, final long[] accepts) {
+	void put(final Long from, final Char by, final Long[] accepts) {
 		if (by.kind == Char.Kind.EPSILON) {
 			put(from, accepts);
 		} else {
@@ -141,7 +141,7 @@ final class Paths {
 	 * @param from 初期状態
 	 * @param accepts 受理状態セット
 	 */
-	void put(final long from, final long[] accepts) {
+	void put(final Long from, final Long[] accepts) {
 		acceptsMap.put(new Key(from), accepts);
 	}
 	/**

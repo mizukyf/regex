@@ -13,7 +13,7 @@ final class IDFactory {
 		return new IDFactory();
 	}
 	
-	private long i = 0;
+	private Long i = 0L;
 	private IDFactory(){}
 	
 	/**
