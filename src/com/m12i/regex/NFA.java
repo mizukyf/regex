@@ -12,8 +12,13 @@ final class NFA {
 	 * このオブジェクトは{@link Node}オブジェクトから導出されます。
 	 */
 	static final class Fragment {
-		
+		/**
+		 * 初期状態.
+		 */
 		final long from;
+		/**
+		 * 受理状態セット.
+		 */
 		final long[] accepts;
 		private final Paths paths = new Paths();
 		
