@@ -10,7 +10,7 @@ final class Node {
 	 * 構文木を構成するノードの種別.
 	 */
 	static enum Kind {
-		CHAR, UNION, STAR, CONCAT, DOT, KLASS;
+		CHAR, UNION, STAR, CONCAT, DOT, KLASS, NEGATIVE_KLASS;
 	}
 	
 	private static final char nullChar = '\u0000';
@@ -23,23 +23,23 @@ final class Node {
 	 * @return ノード
 	 */
 	static Node charNode(final char value) {
-		return new Node(Kind.CHAR, value, null, false, null, null);
+		return new Node(Kind.CHAR, value, null, null, null);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
 	 * @param values 文字クラスに属する文字集合
 	 * @return ノード
 	 */
-	static Node klassNode(final char[] values) {
-		return new Node(Kind.KLASS, nullChar, values, false, null, null);
+	static Node klassNode(final String klass) {
+		return new Node(Kind.KLASS, nullChar, klass, null, null);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
 	 * @param values 文字クラスに属さない文字集合
 	 * @return ノード
 	 */
-	static Node negativeKlassNode(final char[] values) {
-		return new Node(Kind.KLASS, nullChar, values, true, null, null);
+	static Node negativeKlassNode(final String klass) {
+		return new Node(Kind.NEGATIVE_KLASS, nullChar, klass, null, null);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
@@ -48,7 +48,7 @@ final class Node {
 	 * @return ノード
 	 */
 	static Node unionNode(final Node left, final Node right) {
-		return new Node(Kind.UNION, nullChar, null, false, left, right);
+		return new Node(Kind.UNION, nullChar, null, left, right);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
@@ -56,7 +56,7 @@ final class Node {
 	 * @return ノード
 	 */
 	static Node starNode(final Node factor) {
-		return new Node(Kind.STAR, nullChar, null, false, factor, null);
+		return new Node(Kind.STAR, nullChar, null, factor, null);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
@@ -74,28 +74,26 @@ final class Node {
 	 * @return ノード
 	 */
 	static Node concatNode(final Node left, final Node right) {
-		return new Node(Kind.CONCAT, nullChar, null, false, left, right);
+		return new Node(Kind.CONCAT, nullChar, null, left, right);
 	}
 	/**
 	 * 構文木のノードを生成して返す.
 	 * @return ノード
 	 */
 	static Node dotNode() {
-		return new Node(Kind.DOT, nullChar, null, false, null, null);
+		return new Node(Kind.DOT, nullChar, null, null, null);
 	}
 
 	final Kind kind;
 	final char value;
-	final char[] klass;
-	final boolean negative;
+	final String klass;
 	final Node left;
 	final Node right;
 	
-	private Node(final Node.Kind kind, final char value, final char[] klass, final boolean nega, final Node left, final Node right) {
+	private Node(final Node.Kind kind, final char value, final String klass, final Node left, final Node right) {
 		this.kind = kind;
 		this.value = value;
 		this.klass = klass;
-		this.negative = nega;
 		this.left = left;
 		this.right = right;
 	}
@@ -110,13 +108,19 @@ final class Node {
 			final long s0 = factory.product();
 			final long s1 = factory.product();
 			final Fragment fragN = new Fragment(s0, s1);
-			fragN.connect(Char.just(value), Functions.array(s1));
+			fragN.connect(Char.khar(value), Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.KLASS) {
 			final long s0 = factory.product();
 			final long s1 = factory.product();
 			final Fragment fragN = new Fragment(s0, s1);
-			fragN.connect(negative ? Char.negativeKlass(klass) : Char.klass(klass), Functions.array(s1));
+			fragN.connect(Char.klass(klass), Functions.array(s1));
+			return fragN;
+		} else if (kind == Node.Kind.NEGATIVE_KLASS) {
+			final long s0 = factory.product();
+			final long s1 = factory.product();
+			final Fragment fragN = new Fragment(s0, s1);
+			fragN.connect(Char.negativeKlass(klass), Functions.array(s1));
 			return fragN;
 		} else if (kind == Node.Kind.DOT) {
 			final long s0 = factory.product();
@@ -178,7 +182,11 @@ final class Node {
 		} else if (node.kind == Node.Kind.KLASS) {
 			buff
 			.append("Klass([")
-			.append(node.negative ? "^" : "")
+			.append(String.valueOf(node.klass))
+			.append("])");
+		} else if (node.kind == Node.Kind.NEGATIVE_KLASS) {
+			buff
+			.append("NegativeKlass([^")
 			.append(String.valueOf(node.klass))
 			.append("])");
 		} else if (node.kind == Node.Kind.CONCAT) {

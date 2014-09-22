@@ -1,9 +1,5 @@
 package com.m12i.regex;
 
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
-
 /**
  * 非決定性有限オートマトン(Nondeterministic Finite Automaton).
  * 初期状態と受理状態、そして状態遷移パスを管理します。
@@ -119,41 +115,6 @@ final class NFA {
 	 */
 	long[] transition(final long from) {
 		return paths.get(from);
-	}
-	/**
-	 * 空文字状態遷移を行う.
-	 * 初期状態セットを受け取り、それら初期状態および初期状態から空文字（イプシロン）により
-	 * 状態遷移可能な状態のすべてを内包するセットを返します.
-	 * @param states 初期状態
-	 * @return 初期状態およびそこから空文字（イプシロン）により遷移可能な状態のセット
-	 */
-	long[] epsilonExpand(final long[] states) {
-		final Queue<Long> todo = Functions.queue(states);
-		final Set<Long> done = new HashSet<Long>();
-		
-		while (!todo.isEmpty()) {
-			final long s = todo.poll();
-			final long[] nexts = transition(s);
-			done.add(s);
-			if (nexts != null) {
-				for (final long next : nexts) {
-					if (!done.contains(next)) {
-						todo.add(next);
-					}
-				}
-			}
-		}
-		
-		return Functions.array(done);
-	}
-	/**
-	 * 空文字状態遷移を行う.
-	 * {@link #epsilonExpand(long[])}とのちがいは
-	 * 入力となる初期状態がレシーバのNFAオブジェクトから供給されることだけです。
-	 * @return 初期状態およびそこから空文字（イプシロン）により遷移可能な状態のセット
-	 */
-	long[] epsilonExpand() {
-		return epsilonExpand(Functions.array(from));
 	}
 	/**
 	 * NFAオブジェクトをもとにして{@link DFA}オブジェクトを導出する.

@@ -4,6 +4,7 @@ final class Token {
 	static enum Kind {
 		CHAR, UNION, STAR, PLUS, DOT, LPAREN, RPAREN, EOF, LBRACKET, RBRACKET, CARET, HYPHEN;
 	}
+	
 	private final static char nullChar = '\u0000';
 	static final Token UNION = new Token(nullChar, Kind.UNION);
 	static final Token STAR = new Token(nullChar, Kind.STAR);

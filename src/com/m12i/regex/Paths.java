@@ -18,18 +18,24 @@ final class Paths {
 	private final class Key {
 		final long from;
 		final Char by;
+		private final int hash;
 		
 		private Key(final long from, final Char by) {
 			this.from = from;
 			this.by = by;
+			this.hash = makeHashCode();
 		}
 		private Key(final long from) {
 			this.from = from;
 			this.by = Char.EPSILON;
+			this.hash = makeHashCode();
 		}
 		
 		@Override
 		public int hashCode() {
+			return hash;
+		}
+		private int makeHashCode() {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + ((by == null) ? 0 : by.hashCode());
@@ -79,7 +85,7 @@ final class Paths {
 	 * @return 受理状態
 	 */
 	long[] get(final long from, final char by) {
-		long[] result = acceptsMap.get(new Key(from, Char.just(by)));
+		long[] result = acceptsMap.get(new Key(from, Char.khar(by)));
 		if (result == null) {
 			result = new long[0];
 		}

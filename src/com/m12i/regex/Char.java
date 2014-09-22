@@ -9,31 +9,30 @@ import java.util.Map;
  */
 final class Char {
 	static enum Kind {
-		JUST_CHAR, KLASS, NEGATIVE_KLASS, EPSILON, DOT;
+		CHAR, KLASS, NEGATIVE_KLASS, EPSILON, DOT;
 	}
 	
-//	static final Char EPSILON = new Char(-1, null, false, false);
-//	static final Char DOT = new Char(-1, null, true, false);
 	static final Char EPSILON = new Char(-1, null, Kind.EPSILON);
 	static final Char DOT = new Char(-1, null, Kind.DOT);
 	private static final Map<Character,Char> justCharCache = new HashMap<Character,Char>();
-	private static final Map<char[],Char> charKlassCache = new HashMap<char[],Char>();
-	private static final Map<char[],Char> negaCharKlassCache = new HashMap<char[],Char>();
+	private static final Map<String,Char> charKlassCache = new HashMap<String,Char>();
+	private static final Map<String,Char> negaCharKlassCache = new HashMap<String,Char>();
 	
 	/**
 	 * 通常の文字をあらわす{@link Char}オブジェクトを返す.
 	 * @param c 文字
 	 * @return {@link Char}オブジェクト
 	 */
-	static Char just(final char c) {
+	static Char khar(final char c) {
+		// もし同じ意味のクラスがすでに定義済みならそれを返す
+		// ＊これにより同じ意味のオブジェクトが重複して生成されるのを防止する
 		final Char mem = justCharCache.get(c);
 		if (mem != null) {
 			return mem;
 		} else {
-//			final Char newChar = new Char(c, null, false, false);
-			final Char newChar = new Char(c, null, Kind.JUST_CHAR);
-			justCharCache.put(c, newChar);
-			return newChar;
+			final Char ch = new Char(c, null, Kind.CHAR);
+			justCharCache.put(c, ch);
+			return ch;
 		}
 	}
 	/**
@@ -42,13 +41,16 @@ final class Char {
 	 * @param cs 文字クラスに属する文字配列
 	 * @return {@link Char}オブジェクト
 	 */
-	static Char klass(final char[] cs) {
-		final Char mem = charKlassCache.get(cs);
+	static Char klass(final String klass) {
+		// もし同じ意味のクラスがすでに定義済みならそれを返す
+		// ＊これにより同じ意味のオブジェクトが重複して生成されるのを防止する
+		final Char mem = charKlassCache.get(klass);
 		if (mem != null) {
 			return mem;
 		} else {
-//			return new Char(-1, String.valueOf(cs), false, false);
-			return new Char(-1, String.valueOf(cs), Kind.KLASS);
+			final Char ch = new Char(-1, klass, Kind.KLASS);
+			charKlassCache.put(klass, ch);
+			return ch;
 		}
 	}
 	/**
@@ -57,34 +59,31 @@ final class Char {
 	 * @param cs 文字クラスに属さない文字配列
 	 * @return {@link Char}オブジェクト
 	 */
-	static Char negativeKlass(final char[] cs) {
-		final Char mem = negaCharKlassCache.get(cs);
+	static Char negativeKlass(final String klass) {
+		// もし同じ意味のクラスがすでに定義済みならそれを返す
+		// ＊これにより同じ意味のオブジェクトが重複して生成されるのを防止する
+		final Char mem = negaCharKlassCache.get(klass);
 		if (mem != null) {
 			return mem;
 		} else {
-//			return new Char(-1, String.valueOf(cs), false, true);
-			return new Char(-1, String.valueOf(cs), Kind.NEGATIVE_KLASS);
+			final Char ch = new Char(-1, klass, Kind.NEGATIVE_KLASS);
+			negaCharKlassCache.put(klass, ch);
+			return ch;
 		}
 	}
 	
 	final Kind kind;
 	private final int c;
 	private final String cs;
-//	final boolean isEpsilon;
-//	final boolean isJustChar;
-//	final boolean isCharKlass;
-//	final boolean isDot;
-//	final boolean isNegative;
+	private final int hash;
 	
 	private Char(final int c, final String cs, final Kind kind) {
 		this.c = c;
 		this.cs = cs;
-//		this.isEpsilon = c < 0 && cs == null && !dot;
-//		this.isJustChar = c >= 0;
-//		this.isCharKlass = cs != null;
-//		this.isDot = dot;
-//		this.isNegative = nega;
 		this.kind = kind;
+		// ハッシュコードを計算する
+		// ＊このオブジェクトはイミュータブルなのでハッシュコードはこの段階で確定する
+		this.hash = makeHashCode();
 	}
 	
 	/**
@@ -100,7 +99,7 @@ final class Char {
 	 * @return 検証結果
 	 */
 	boolean matches(final char ch) {
-		if (kind == Kind.JUST_CHAR) {
+		if (kind == Kind.CHAR) {
 			return this.c == ch;
 		} else if (kind == Kind.KLASS) {
 			return -1 < cs.indexOf(ch);
@@ -111,32 +110,12 @@ final class Char {
 		} else {
 			return false;
 		}
-//		if (isJustChar) {
-//			return this.c == ch;
-//		} else if (isCharKlass && !isNegative) {
-////			for (final char c: cs) {
-////				if (c == ch) {
-////					return true;
-////				}
-////			}
-////			return false;
-//			return -1 < cs.indexOf(ch);
-//		} else if (isCharKlass && isNegative) {
-////			for (final char c: cs) {
-////				if (c == ch) {
-////					return false;
-////				}
-////			}
-////			return true;
-//			return -1 == cs.indexOf(ch);
-//		} else if (isDot) {
-//			return true;
-//		} else {
-//			return false;
-//		}
 	}
 	@Override
 	public int hashCode() {
+		return hash;
+	}
+	private int makeHashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + c;
@@ -146,22 +125,10 @@ final class Char {
 	}
 	@Override
 	public boolean equals(Object obj) {
+		// 等価性判定は参照そのものの比較でOK
+		// ＊このオブジェクトは重複なし制御されているため参照比較のみでよい
 		if (this == obj)
 			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Char other = (Char) obj;
-		if (kind != other.kind)
-			return false;
-		if (c != other.c)
-			return false;
-		if (cs == null) {
-			if (other.cs != null)
-				return false;
-		} else if (!cs.equals(other.cs))
-			return false;
 		return true;
 	}
 	/**
@@ -169,7 +136,7 @@ final class Char {
 	 * @return 整形結果
 	 */
 	String inspect() {
-		if (kind == Kind.JUST_CHAR) {
+		if (kind == Kind.CHAR) {
 			return Functions.charLiteral((char)c);
 		} else if (kind == Kind.EPSILON) {
 			return "(epsilon)";

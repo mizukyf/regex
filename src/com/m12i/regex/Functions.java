@@ -3,9 +3,7 @@ package com.m12i.regex;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -123,21 +121,6 @@ final class Functions {
 			}
 		}
 		return r;
-	}
-	static Queue<Long> queue(final long...array) {
-		final Queue<Long> r = new LinkedList<Long>();
-		for (final long n: array) {
-			r.add(n);
-		}
-		return r;
-	}
-	static long[] array(final Set<Long> set) {
-		final long[] array = new long[set.size()];
-		int i = 0;
-		for (final long n : set) {
-			array[i++] = n;
-		}
-		return array;
 	}
 	static long[] array(final long n) {
 		return new long[]{n};

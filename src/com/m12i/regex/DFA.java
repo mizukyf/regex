@@ -1,5 +1,6 @@
 package com.m12i.regex;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,8 +40,9 @@ final class DFA {
 		 * @return 検証結果
 		 */
 		boolean doesAccept(final String input) {
-			for (final char c : input.toCharArray()) {
-				currentState = dfa.transition(currentState, c);
+			final char[] chars = input.toCharArray();
+			for (int i = 0; i < chars.length; i ++) {
+				currentState = dfa.transition(currentState, chars[i]);
 			}
 			return dfa.accepts.contains(currentState);
 		}
@@ -133,7 +135,7 @@ final class DFA {
 	 */
 	DFA(final NFA nfa) {
 		this.nfa = nfa;
-		this.froms = nfa.epsilonExpand();
+		this.froms = epsilonExpand();
 		this.accepts = new NonDisjoinSets(nfa.accepts);
 	}
 	
@@ -149,14 +151,58 @@ final class DFA {
 		if (mem != null) {
 			return mem;
 		} else {
-			final Set<Long> set = new HashSet<Long>();
+			final ArrayList<Long> acceptList = new ArrayList<Long>();
 			for (final long from : froms) {
-				set.addAll(Functions.set(nfa.transition(from, by)));
+				for (final long accept : nfa.transition(from, by)) {
+					acceptList.add(accept);
+				}
 			}
-			final long[] accepts = nfa.epsilonExpand(Functions.array(set));
+			final long[] accepts = epsilonExpand(acceptList);
 			cache.put(froms, by, accepts);
 			return accepts;
 		}
+	}
+	/**
+	 * 空文字状態遷移を行う.
+	 * 初期状態セットを受け取り、それら初期状態および初期状態から空文字（イプシロン）により
+	 * 状態遷移可能な状態のすべてを内包するセットを返します.
+	 * @param states 初期状態
+	 * @return 初期状態およびそこから空文字（イプシロン）により遷移可能な状態のセット
+	 */
+	private long[] epsilonExpand(final ArrayList<Long> todo) {
+		final Set<Long> done = new HashSet<Long>();
+		
+		while (!todo.isEmpty()) {
+			final long s = todo.remove(0);
+			if (done.add(s)) {
+				final long[] nexts = nfa.transition(s);
+				if (nexts != null) {
+					for (final long next : nexts) {
+						if (!done.contains(next)) {
+							todo.add(next);
+						}
+					}
+				}
+			}
+		}
+		
+		final long[] array = new long[done.size()];
+		int i = 0;
+		for (final long n : done) {
+			array[i++] = n;
+		}
+		return array;
+	}
+	/**
+	 * 空文字状態遷移を行う.
+	 * {@link #epsilonExpand(long[])}とのちがいは
+	 * 入力となる初期状態がレシーバのNFAオブジェクトから供給されることだけです。
+	 * @return 初期状態およびそこから空文字（イプシロン）により遷移可能な状態のセット
+	 */
+	private long[] epsilonExpand() {
+		final ArrayList<Long> acceptList = new ArrayList<Long>();
+		acceptList.add(nfa.from);
+		return epsilonExpand(acceptList);
 	}
 	/**
 	 * このDFAオブジェクトをもとに{@link Runtime}オブジェクトを導出・初期化します.

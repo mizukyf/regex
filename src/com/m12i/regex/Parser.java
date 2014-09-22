@@ -1,9 +1,5 @@
 package com.m12i.regex;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
 import com.m12i.regex.Token.Kind;
 
 /**
@@ -61,30 +57,30 @@ final class Parser {
 		} else {
 			nega = false;
 		}
-		final LinkedList<Character> buff = new LinkedList<Character>();
+		final StringBuilder buff = new StringBuilder();
+		char last = '\u0000';
 		while (curr.kind != Kind.RBRACKET) {
 			if (curr.kind == Kind.HYPHEN) {
 				next();
-				buff.addAll(range(buff.removeLast(), curr.value));
+				range(buff, last, curr.value);
 			} else {
-				buff.add(curr.value);
+				buff.append(curr.value);
+				last = curr.value;
 			}
 			next();
 		}
 		next();
-		final char[] values = Functions.array(buff);
-		return nega ? Node.negativeKlassNode(values) : Node.klassNode(values);
+		return nega ? Node.negativeKlassNode(buff.toString()) : Node.klassNode(buff.toString());
 	}
-	private List<Character> range(final char start, final char end) {
-		if (start > end || start > 127) {
-			return Collections.emptyList();
+	private void range(final StringBuilder buff, final char start, final char end) {
+		final int startNext = start + 1;
+		if (startNext > end || startNext > 127) {
+			return;
 		}
-		final int len = (end > 127 ? 127 : end) - start;
-		final List<Character> result = new LinkedList<Character>();
+		final int len = (end > 127 ? 127 : end) - startNext;
 		for (char i = 0; i <= len; i++) {
-			result.add((char) (start + i));
+			buff.append((char) (startNext + i));
 		}
-		return result;
 	}
 	private Node star() {
 		final Node node = factor();
