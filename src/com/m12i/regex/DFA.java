@@ -198,46 +198,6 @@ final class DFA {
 			return accepts;
 		}
 	}
-//	/**
-//	 * 空文字状態遷移を行う.
-//	 * 受理状態セットを受け取り、それらの状態および状態から空文字（イプシロン）により
-//	 * 状態遷移可能な受理状態のいずれもすべてを内包するセットを返します.
-//	 * @param todo 処理待ち初期状態セット
-//	 * @return 受理状態およびそこから空文字（イプシロン）により遷移可能な受理状態のセット
-//	 */
-//	private long[] epsilonExpand(final ArrayList<Long> todo) {
-//		// 処理済み初期状態を記録するためのセットを初期化
-//		final Set<Long> done = new HashSet<Long>();
-//		
-//		// 引数として渡された受理状態セットの未処理要素がなくなるまでループ
-//		while (!todo.isEmpty()) {
-//			// 要素（受理状態）を1つ取り出す
-//			final long s = todo.remove(0);
-//			// 処理済みセットに登録し、同時に、「登録時点ですでに処理済みだったか」を検証
-//			// すでに登録済みだったならこのあとの処理はスキップする
-//			if (done.add(s)) {
-//				// この受理状態を初期状態として空文字（イプシロン）により遷移可能な受理状態セットを取得
-//				final long[] nexts = nfa.transition(s);
-//				// 結果がnullでなければ遷移可能な受理状態があるということ
-//				if (nexts != null) {
-//					// それらの状態セットについてループ処理
-//					for (final long next : nexts) {
-//						// もし処理済みセットに存在しないものであれば処理待ちセットに登録
-//						if (!done.contains(next)) {
-//							todo.add(next);
-//						}
-//					}
-//				}
-//			}
-//		}
-//		// 処理済みセットを配列に変化して呼び出し元に返す
-//		final long[] array = new long[done.size()];
-//		int i = 0;
-//		for (final long n : done) {
-//			array[i++] = n;
-//		}
-//		return array;
-//	}
 	private ArrayList<Long> epsilonExpand(final long seed) {
 		// 処理済み初期状態を記録するためのセットを初期化
 		final ArrayList<Long> done = new ArrayList<Long>();
@@ -248,23 +208,20 @@ final class DFA {
 		while (!todo.isEmpty()) {
 			// 要素（受理状態）を1つ取り出す
 			final long s = todo.remove(0);
-			// 処理済みセットに登録し、同時に、「登録時点ですでに処理済みだったか」を検証
-			// すでに登録済みだったならこのあとの処理はスキップする
-//			if (!done.contains(s)) {
-				done.add(s);
-				// この受理状態を初期状態として空文字（イプシロン）により遷移可能な受理状態セットを取得
-				final long[] nexts = nfa.transition(s);
-				// 結果がnullでなければ遷移可能な受理状態があるということ
-				if (nexts != null) {
-					// それらの状態セットについてループ処理
-					for (final long next : nexts) {
-						// もし処理済みセットに存在しないものであれば処理待ちセットに登録
-						if (!done.contains(next)) {
-							todo.add(next);
-						}
+			// 処理済みセットに登録
+			done.add(s);
+			// この受理状態を初期状態として空文字（イプシロン）により遷移可能な受理状態セットを取得
+			final long[] nexts = nfa.transition(s);
+			// 結果がnullでなければ遷移可能な受理状態があるということ
+			if (nexts != null) {
+				// それらの状態セットについてループ処理
+				for (final long next : nexts) {
+					// もし処理済みセットに存在しないものであれば処理待ちセットに登録
+					if (!done.contains(next)) {
+						todo.add(next);
 					}
 				}
-//			}
+			}
 		}
 		return done;
 	}
