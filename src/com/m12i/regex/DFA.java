@@ -87,12 +87,18 @@ final class DFA {
 		private static final class Key {
 			final long[] froms;
 			final char by;
+			private final int hash;
 			Key(final long[] froms, final char by) {
 				this.froms = froms;
 				this.by = by;
+				// イミュータブル・オブジェクトなのでこの時点でハッシュコードも確定する
+				this.hash = makeHashCode();
 			}
 			@Override
 			public int hashCode() {
+				return hash;
+			}
+			private int makeHashCode() {
 				final int prime = 31;
 				int result = 1;
 				result = prime * result + by;
