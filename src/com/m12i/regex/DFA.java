@@ -91,7 +91,8 @@ final class DFA {
 			Key(final long[] froms, final char by) {
 				this.froms = froms;
 				this.by = by;
-				// イミュータブル・オブジェクトなのでこの時点でハッシュコードも確定する
+				// 実際上のイミュータブル・オブジェクトなのでこの時点でハッシュコードも確定する
+				// ＊formsはミュータブルだが実際上書き換えは行われない
 				this.hash = makeHashCode();
 			}
 			@Override
