@@ -1,5 +1,7 @@
 package com.m12i.regex;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.MatchResult;
 
 /**
@@ -70,15 +72,35 @@ public final class Regex {
 			return lastIndex > -1;
 		}
 	}
+	
+	/**
+	 * Regexキャッシュ.
+	 * 一連のキャッシュのなかでもっとも最前面にあるもので、
+	 * 使用頻度はもっとも低いはずのものです。
+	 * DFAエンジンの弱点であるコンパイル時間の圧縮のため
+	 * 入力パターンとコンパイル済みDFAを関連づけて保管します。
+	 */
+	private static final Map<String,Regex> regexCache = new HashMap<String, Regex>();
+	
 	/**
 	 * 正規表現パターンをもとに正規表現オブジェクトを初期化して返す.
 	 * @param pattern 正規表現パターン
 	 * @return 正規表現オブジェクト
 	 */
 	public static Regex compile(final String pattern) {
-		return new Regex(pattern);
+		final Regex cached = regexCache.get(pattern);
+		if (cached != null) {
+			return cached;
+		} else {
+			final Regex re = new Regex(pattern);
+			regexCache.put(pattern, re);
+			return re;
+		}
 	}
 	
+	/**
+	 * 正規表現パターンを解析して得られたDFA.
+	 */
 	private final DFA dfa;
 	/**
 	 * このオブジェクトのもととなった正規表現パターン.
